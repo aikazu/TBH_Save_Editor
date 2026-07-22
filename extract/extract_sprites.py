@@ -16,7 +16,7 @@ SPRITE_RE = re.compile(r"^(?:Item|[A-Z]+)_(\d+)$")
 
 def main():
     os.makedirs(ICONS, exist_ok=True)
-    wanted = set(json.load(open(os.path.join(DATA, "names_en.json"), encoding="utf-8")).keys())
+    wanted = set(json.load(open(os.path.join(DATA, "names.json"), encoding="utf-8")).keys())
     env = UnityPy.load(os.path.join(GAME_DATA, "sharedassets0.assets"))
     icon_map = {}
     done = 0

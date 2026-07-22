@@ -13,6 +13,7 @@ EnchantData resolution chain:
 import csv
 import json
 import os
+import re
 
 # slot index -> required material type
 SLOT_MATERIAL_TYPE = ["DECORATION", "DECORATION", "ENGRAVING", "ENGRAVING", "INSCRIPTION", "INSCRIPTION"]
@@ -55,11 +56,12 @@ class GameData:
             mt = r["MATERIALTYPE"]
             if mt in self.materials_by_type:
                 self.materials_by_type[mt].append(k)
-        # names and icons (English only)
-        self.names = json.load(open(os.path.join(data_dir, "names_en.json"), encoding="utf-8"))
+        # names and icons
+        self.names = json.load(open(os.path.join(data_dir, "names.json"), encoding="utf-8"))
         self.icon_map = json.load(open(os.path.join(data_dir, "icon_map.json"), encoding="utf-8"))
         self._named = set(self.names)  # keys with their own name/icon (base models)
-        self.strings = json.load(open(os.path.join(data_dir, "strings_en.json"), encoding="utf-8"))
+        # hero display names (trimmed: HeroName_<key> only)
+        self.hero_names = json.load(open(os.path.join(data_dir, "strings.json"), encoding="utf-8"))
         enums = json.load(open(os.path.join(data_dir, "enums.json"), encoding="utf-8"))
         self.stat_name_to_id = {v: int(k) for k, v in enums["StatType"].items()}
         self.modtype_name_to_id = {v: int(k) for k, v in enums["MODTYPE"].items()}
@@ -69,7 +71,7 @@ class GameData:
 
     # ---- heroes ----
     def hero_name(self, herokey):
-        return (self.strings.get("HeroName_%s" % herokey)
+        return (self.hero_names.get("HeroName_%s" % herokey)
                 or self.hero_info.get(str(herokey), {}).get("ClassType")
                 or ("Hero %s" % herokey))
 
@@ -145,7 +147,6 @@ class GameData:
     # human-readable name for a StatType (ex PhysicalDamagePercent -> "Physical Damage %")
     @staticmethod
     def pretty_stat(stattype_name):
-        import re
         words = re.findall(r"[A-Z][a-z0-9]*", stattype_name or "")
         s = " ".join(words) if words else (stattype_name or "")
         return s.replace(" Percent", " %")

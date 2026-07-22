@@ -13,8 +13,8 @@ import extract_localization
 import extract_sprites
 
 if __name__ == "__main__":
-    print("== 1/4 CSV tables ==");        extract_tables.main()
-    print("\n== 2/4 enums from dump ==");  extract_enums.main()
-    print("\n== 3/4 localization (names) =="); extract_localization.main()
-    print("\n== 4/4 icons ==");            extract_sprites.main()
+    print("== 1/4 CSV tables ==");                extract_tables.main()
+    print("\n== 2/4 enums from dump ==");          extract_enums.main()
+    print("\n== 3/4 names (English only) ==");      extract_localization.main()
+    print("\n== 4/4 icons ==");                    extract_sprites.main()
     print("\nDone. Data in saveEditor/data/. Run 'python server.py'.")
