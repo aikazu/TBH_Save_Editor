@@ -247,24 +247,20 @@ class C:
 
 
 BANNER = r"""
- ____  ____  _____   _   _   _____    ____  _____  ____  _____  ____
-|  _ \|  _ \|  ___| | |_| | / ____|  / __ \|  __ )/ __ \|  __ )/ __ \
-| |_) | |_) | |_    |  _  || (___   | |  | |  __ \ |  | |  __ \ |  | |
-|  _ <|  _ <|  _|   | | | | \___ \  | |  | | |_/ / |  | | |_/ / |  | |
-|_| \_\_| \_\_|     |_| |_| _____/  |_|  |_|_____/|____/|____/ |_|  |_|
-
-                       Enchantment Editor for TaskbarHero
+ _____ ____  _   _   ____    ___     _______   _____ ____ ___ _____ ___  ____
+|_   _| __ )| | | | / ___|  / \ \   / / ____| | ____|  _ \_ _|_   _/ _ \|  _ \
+  | | |  _ \| |_| | \___ \ / _ \ \ / /|  _|   |  _| | | | | |  | || | | | |_) |
+  | | | |_) |  _  |  ___) / ___ \ V / | |___  | |___| |_| | |  | || |_| |  _ <
+  |_| |____/|_| |_| |____/_/   \_\_/  |_____| |_____|____/___| |_| \___/|_| \_\
 """
 
 
 def print_banner():
-    """Print the ASCII banner in cyan/bold."""
-    lines = BANNER.splitlines()
-    for line in lines:
-        if "Enchantment Editor" in line:
-            print(C.dim(line))
-        elif line.strip():
+    """Print the ASCII banner in cyan/bold, then a dim subtitle line."""
+    for line in BANNER.splitlines():
+        if line.strip():
             print(C.cyan(C.bold(line)))
+    print(C.dim("       Enchantment Editor for TaskbarHero  -  local web app (zero deps)"))
     print()
 
 
