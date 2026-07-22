@@ -23,6 +23,7 @@
 **Prerequisites:** Python 3. Nothing else. No `pip install`.
 
 ```powershell
+git clone https://github.com/aikazu/TBH_Save_Editor
 cd TBH_Save_Editor
 python server.py
 ```
