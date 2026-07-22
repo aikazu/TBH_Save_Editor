@@ -229,11 +229,6 @@ class GameData:
         "DamageAddition": (10, True), "FireDamageAddition": (10, True),
         "ColdDamageAddition": (10, True), "LightningDamageAddition": (10, True),
         "ChaosDamageAddition": (10, True), "PhysicalDamageAddition": (10, True),
-        # /10 flat: the game renders DamageAbsorption as raw/10 with no % sign
-        # (verified in-game: T8 raw 50 -> "5", T10 raw 80 -> "8"). The save
-        # stores raw*10, so the editor must mirror the game's own scaling for
-        # consistency. is_percent=False because no "%" suffix is shown.
-        "DamageAbsorption": (10, False),
         # flat (raw as-is, no unit): AddHpPerHit, AddHpPerKill,
         # HpRegenPerSec, BaseAttackCountReduction, Multistrike, ProjectileCount,
         # AdditionalExp, IncreaseExpAmount -> default (1, False) below.
@@ -244,6 +239,13 @@ class GameData:
     # Variant stats: the ADDITIVE (percent) variant of these is /10 percent; the
     # FLAT variant is a plain integer. Keyed by STATTYPE.
     VARIANT_STATS = {"AttackDamage", "Armor", "MaxHp", "MovementSpeed", "CriticalChance"}
+
+    # Stats whose save value is the editor value * 10. The game reads these as
+    # raw/10 for display, so writing raw*10 makes the in-game number match the
+    # number shown in the editor (e.g. editor T8 = 50 -> save 500 -> game "50").
+    # Only to_raw is affected; to_display is left at the default (1, False) so
+    # the editor shows the table value as-is.
+    INJECT_X10_STATS = {"DamageAbsorption"}
 
     @classmethod
     def _display_rule(cls, stattype_name, modtype):
@@ -267,7 +269,10 @@ class GameData:
     def to_raw(cls, value, stattype_name, modtype):
         """Human-readable value -> raw save value."""
         div = cls._display_rule(stattype_name, modtype)[0]
-        return int(value) * div
+        raw = int(value) * div
+        if stattype_name in cls.INJECT_X10_STATS:
+            raw *= 10
+        return raw
 
     def stat_first_options(self, slot_index, gear_group):
         """Stat-first view: for a slot's material type, merges every material's
@@ -390,6 +395,11 @@ class GameData:
             errs.append(f"Tier {ed.get('Tier')} is invalid for this stat")
             return errs
         v = ed.get("Value", 0)
+        # INJECT_X10 stats are stored as editor_value*10, so the raw Value will
+        # legitimately exceed the raw table max. Skip the range/step check for
+        # those; all other stats keep the original strict validation.
+        if tier["statType"] in self.INJECT_X10_STATS:
+            return errs
         if not (tier["min"] <= v <= tier["max"]):
             errs.append(f"Value {v} is outside range [{tier['min']},{tier['max']}]")
         elif tier["interval"] and (v - tier["min"]) % tier["interval"] != 0:
