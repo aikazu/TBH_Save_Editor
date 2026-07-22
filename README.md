@@ -5,6 +5,44 @@
 > **automatic anti-tamper HMAC** on save. Runs locally in your browser, no
 > upload, no telemetry.
 
+![Python](https://img.shields.io/badge/Python-3-blue.svg)
+![Dependencies](https://img.shields.io/badge/dependencies-0-success.svg)
+![Runs](https://img.shields.io/badge/runs-locally%20100%25-orange.svg)
+![Game](https://img.shields.io/badge/game-Task%20Bar%20Hero-8A2BE2.svg)
+![Status](https://img.shields.io/badge/status-DWYOR-red.svg)
+
+> ## ⚠️ **DWYOR — Do With Your Own Risk**
+>
+> This tool modifies your encrypted save file. Although it is **game-table
+> validated** and re-signs the `SystemInfo` HMAC so the local anti-tamper check
+> still passes, **the game also performs server-side validation** for certain
+> things (crafted and dropped items are known to be checked). The
+> developer/publisher may expand detection at any time. Modifying a save —
+> even one the game considers "legal" locally — can still get your account
+> **flagged or banned**.
+>
+> - **Always** keep the `.es3.bak` backup the app writes on every save.
+> - **Close the game completely** before saving, or it overwrites your edits on exit.
+> - **Do not** use this on a save you cannot afford to lose.
+>
+> The maintainers of this fork are **not responsible** for corrupted saves,
+> banned accounts, or any other consequences. You have been warned.
+
+---
+
+## 📑 Table of Contents
+
+- [✨ Features](#-features)
+- [🚀 Quick Start](#-quick-start)
+- [🏗 Architecture](#-architecture)
+- [📂 Project Layout](#-project-layout)
+- [🔍 How Validation Works](#-how-validation-works)
+- [🔄 Re-Extracting Data](#-re-extracting-data)
+- [🛠 Tech Stack](#-tech-stack)
+- [📚 Documentation](#-documentation)
+- [🙏 Credits](#-credits)
+- [⚠️ Disclaimer](#-disclaimer)
+
 ---
 
 ## ✨ Features
@@ -178,8 +216,38 @@ python extract/extract_all.py
 
 ---
 
+## 🙏 Credits
+
+This project is a **Python-stdlib rewrite and extension** of the original
+**TBH Save Editor** created by **[revistabr89](https://www.unknowncheats.me/forum/members/4678483.html)**
+on the UnKnoWnCheaTs forum.
+
+The core save-decryption approach and the Decoration / Engraving / Inscription
+editing concept originate from their release. Huge thanks for sharing the
+original tool and the underlying research.
+
+🔗 **Original thread:**
+[TBH - Save Editor (decorations, engraving, inscriptions)](https://www.unknowncheats.me/forum/other-games/758708-tbh-save-editor-decorations-engraving-inscriptions.html)
+*(tested by the original author on game v1.00.17 – 1.00.20)*
+
+---
+
 ## ⚠️ Disclaimer
 
-This is a personal single-player save editor. The game is single-player and
-offline; no online service is touched. Use at your own risk — always keep the
-`.es3.bak` backup the app creates on every save.
+**DWYOR — Do With Your Own Risk.**
+
+This is a personal save editor. While the game is primarily single-player, it
+is not fully offline — **crafted and dropped items are validated server-side**,
+so editing the wrong fields can get your save rejected or your account flagged.
+Beyond that, modifying any save carries inherent risk:
+
+- The publisher may add new server-side validation or detection in any update —
+  what passes today may be flagged tomorrow.
+- A corrupted or malformed save can prevent the game from loading.
+- **No warranty is provided, express or implied.** The maintainers are not
+  liable for corrupted saves, lost progress, banned accounts, or any other
+  damage arising from the use of this tool.
+
+**Always back up your save.** The app writes a `.es3.bak` on every save — keep
+it, and ideally keep your own separate backup too. If anything goes wrong,
+restore the `.bak` and you are back to where you started.
