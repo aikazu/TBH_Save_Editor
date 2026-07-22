@@ -1,0 +1,17 @@
+﻿GearType,BaseStat1_STATTYPE,BaseStat1_MODTYPE,BaseStat2_STATTYPE,BaseStat2_MODTYPE
+SWORD,AttackDamage,FLAT,AttackSpeed,FLAT
+BOW,AttackDamage,FLAT,AttackSpeed,FLAT
+STAFF,AttackDamage,FLAT,AttackSpeed,FLAT
+SCEPTER,AttackDamage,FLAT,AttackSpeed,FLAT
+CROSSBOW,AttackDamage,FLAT,AttackSpeed,FLAT
+AXE,AttackDamage,FLAT,AttackSpeed,FLAT
+SHIELD,BlockChance,FLAT,,
+ARROW,AttackSpeed,ADDITIVE,,
+ORB,CooldownReduction,FLAT,,
+TOME,MaxHp,FLAT,,
+BOLT,CriticalDamage,FLAT,,
+HATCHET,AttackDamage,ADDITIVE,,
+HELMET,Armor,FLAT,,
+ARMOR,Armor,FLAT,,
+GLOVES,Armor,FLAT,,
+BOOTS,Armor,FLAT,,

@@ -1,0 +1,421 @@
+/* ===========================================================================
+   TBH Save Editor — "Enchanter's Workbench"
+   Obsidian base + forge-ember action. Rarity ladder is the signature:
+   item grade badges read as instant rarity.
+   =========================================================================== */
+
+:root {
+  /* surfaces */
+  --ink: #0d0f14;
+  --panel: #14171f;
+  --panel-2: #1c2029;
+  --panel-3: #232834;
+  --edge: #2a2f3d;
+  --edge-soft: #21253a;
+
+  /* text */
+  --txt: #e6e8f0;
+  --dim: #8b91a4;
+  --dim-2: #5f6478;
+
+  /* action + focus */
+  --ember: #f0a13a;
+  --ember-ink: #1a120a;
+  --arcane: #7c9eff;
+
+  /* semantic */
+  --ok: #4ecf8b;
+  --bad: #f0656a;
+
+  /* enchant-type accents (semantic — encode real game info) */
+  --deco: #c08bf0;
+  --engr: #6fb8ff;
+  --insc: #7fd87f;
+
+  /* rarity ladder (signature) */
+  --r-COMMON: #9499aa;
+  --r-UNCOMMON: #6abf6a;
+  --r-RARE: #5aa9ff;
+  --r-LEGENDARY: #d49a3a;
+  --r-IMMORTAL: #c065e0;
+  --r-ARCANA: #ff5d8f;
+  --r-BEYOND: #8aa0ff;
+  --r-CELESTIAL: #7fe0e0;
+  --r-DIVINE: #ffe066;
+  --r-COSMIC: #ffb454;
+
+  --radius: 10px;
+  --radius-sm: 7px;
+  --mono: ui-monospace, "SF Mono", "Cascadia Code", "Consolas", monospace;
+  --body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(240, 161, 58, 0.06), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, rgba(124, 158, 255, 0.05), transparent 60%),
+    var(--ink);
+  color: var(--txt);
+  font: 14px/1.5 var(--body);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ----------------------------- header / loadbar ------------------------- */
+header {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 12px 20px;
+  background: linear-gradient(180deg, var(--panel) 0%, rgba(20, 23, 31, 0.92) 100%);
+  border-bottom: 1px solid var(--edge);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  backdrop-filter: blur(6px);
+}
+.brand {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  white-space: nowrap;
+}
+.brand .mark {
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  font-size: 15px;
+  color: var(--txt);
+}
+.brand .mark span { color: var(--ember); }
+.brand .sub {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--dim-2);
+}
+
+.loadbar { display: flex; gap: 8px; flex: 1; align-items: center; }
+.loadbar input[type="text"] { flex: 1; font-family: var(--mono); font-size: 12.5px; }
+.loadbar select { width: auto; min-width: 92px; }
+
+/* ----------------------------- form controls ---------------------------- */
+input, select, button {
+  background: var(--panel-2);
+  color: var(--txt);
+  border: 1px solid var(--edge);
+  border-radius: var(--radius-sm);
+  padding: 8px 11px;
+  font: inherit;
+}
+input:focus, select:focus, button:focus-visible {
+  outline: none;
+  border-color: var(--arcane);
+  box-shadow: 0 0 0 3px rgba(124, 158, 255, 0.18);
+}
+button {
+  cursor: pointer;
+  transition: background .14s, border-color .14s, color .14s, opacity .14s;
+  font-weight: 500;
+}
+button:hover:not(:disabled) {
+  border-color: var(--arcane);
+  background: var(--panel-3);
+}
+button.primary {
+  background: var(--ember);
+  color: var(--ember-ink);
+  border-color: var(--ember);
+  font-weight: 700;
+}
+button.primary:hover:not(:disabled) {
+  background: #ffb04a;
+  border-color: #ffb04a;
+}
+button:disabled { opacity: .4; cursor: not-allowed; }
+button.linkbtn {
+  background: none;
+  border: none;
+  color: var(--arcane);
+  padding: 6px 4px;
+  font-size: 12.5px;
+}
+button.linkbtn:hover:not(:disabled) {
+  background: none;
+  border: none;
+  color: #aac0ff;
+  text-decoration: underline;
+}
+
+/* ----------------------------- layout ----------------------------------- */
+main {
+  display: grid;
+  grid-template-columns: 210px 330px 1fr;
+  gap: 14px;
+  padding: 14px 20px 80px; /* room for status strip */
+  align-items: start;
+}
+@media (max-width: 1100px) {
+  main { grid-template-columns: 200px 1fr; }
+  #enchPane { grid-column: 1 / -1; }
+}
+@media (max-width: 760px) {
+  main { grid-template-columns: 1fr; padding: 12px; }
+  #enchPane { grid-column: auto; }
+}
+
+.pane {
+  background: var(--panel);
+  border: 1px solid var(--edge);
+  border-radius: var(--radius);
+  padding: 14px;
+  min-height: 72vh;
+}
+.pane h2 {
+  margin: 0 0 12px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.6px;
+  color: var(--dim);
+  font-weight: 700;
+}
+.empty {
+  color: var(--dim);
+  padding: 32px 12px;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.empty strong { color: var(--txt); display: block; margin-bottom: 4px; font-weight: 600; }
+
+/* ----------------------------- hero list -------------------------------- */
+.list { display: flex; flex-direction: column; gap: 6px; }
+.hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--panel-2);
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: border-color .12s, background .12s;
+}
+.hero:hover { border-color: var(--arcane); background: var(--panel-3); }
+.hero.sel { border-color: var(--ember); background: rgba(240, 161, 58, 0.10); }
+.hero .nm { font-weight: 600; }
+.hero .lv {
+  color: var(--dim);
+  font-size: 11px;
+  font-family: var(--mono);
+  white-space: nowrap;
+}
+
+/* ----------------------------- item grid -------------------------------- */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 10px;
+}
+.card {
+  background: var(--panel-2);
+  border: 1px solid var(--edge);
+  border-radius: var(--radius-sm);
+  padding: 12px 10px 10px;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color .12s, transform .12s, background .12s;
+}
+.card:hover { border-color: var(--arcane); transform: translateY(-1px); background: var(--panel-3); }
+.card.sel { border-color: var(--ember); box-shadow: 0 0 0 1px var(--ember) inset; }
+.card img, .ico {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+.card .nm {
+  font-size: 12px;
+  margin-top: 8px;
+  min-height: 32px;
+  line-height: 1.35;
+}
+.card .grp {
+  font-size: 10px;
+  color: var(--dim-2);
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  margin-top: 4px;
+}
+.ico {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #0a0c11;
+  border-radius: 6px;
+  color: var(--dim-2);
+  font-size: 10px;
+  font-family: var(--mono);
+}
+
+/* grade badge (signature: rarity color) */
+.grade {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 99px;
+  margin-top: 5px;
+  color: var(--r-COMMON);
+  background: rgba(148, 153, 170, 0.12);
+  border: 1px solid rgba(148, 153, 170, 0.25);
+}
+.grade.r-UNCOMMON { color: var(--r-UNCOMMON); background: rgba(106,191,106,.12); border-color: rgba(106,191,106,.3); }
+.grade.r-RARE { color: var(--r-RARE); background: rgba(90,169,255,.12); border-color: rgba(90,169,255,.3); }
+.grade.r-LEGENDARY { color: var(--r-LEGENDARY); background: rgba(212,154,58,.14); border-color: rgba(212,154,58,.32); }
+.grade.r-IMMORTAL { color: var(--r-IMMORTAL); background: rgba(192,101,224,.14); border-color: rgba(192,101,224,.32); }
+.grade.r-ARCANA { color: var(--r-ARCANA); background: rgba(255,93,143,.14); border-color: rgba(255,93,143,.32); }
+.grade.r-BEYOND { color: var(--r-BEYOND); background: rgba(138,160,255,.14); border-color: rgba(138,160,255,.32); }
+.grade.r-CELESTIAL { color: var(--r-CELESTIAL); background: rgba(127,224,224,.14); border-color: rgba(127,224,224,.32); }
+.grade.r-DIVINE { color: var(--r-DIVINE); background: rgba(255,224,102,.14); border-color: rgba(255,224,102,.34); }
+.grade.r-COSMIC { color: var(--r-COSMIC); background: rgba(255,180,84,.14); border-color: rgba(255,180,84,.34); }
+
+/* ----------------------------- enchant slots ---------------------------- */
+.slot {
+  position: relative;
+  background: var(--panel-2);
+  border: 1px solid var(--edge);
+  border-left: 3px solid var(--dim-2);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  transition: border-color .12s;
+}
+.slot[data-type="DECORATION"] { border-left-color: var(--deco); }
+.slot[data-type="ENGRAVING"] { border-left-color: var(--engr); }
+.slot[data-type="INSCRIPTION"] { border-left-color: var(--insc); }
+.slot.locked { opacity: .5; border-left-color: var(--dim-2); }
+
+.slot .head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.slot .tag {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 99px;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+}
+.tag.DECORATION { background: rgba(192,139,240,.14); color: var(--deco); }
+.tag.ENGRAVING { background: rgba(111,184,255,.14); color: var(--engr); }
+.tag.INSCRIPTION { background: rgba(127,216,127,.14); color: var(--insc); }
+
+.slot .cur { flex: 1; color: var(--dim); font-size: 13px; }
+.slot .cur b { color: var(--txt); }
+.slot .cur .v { color: var(--ember); font-family: var(--mono); font-weight: 700; }
+.slot .stat { color: var(--arcane); font-weight: 600; }
+.slot .tier { color: var(--dim); font-family: var(--mono); font-size: 12px; }
+.slot .err { color: var(--bad); font-size: 12px; margin-top: 4px; }
+
+/* ----------------------------- inline editor ---------------------------- */
+.editor {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--edge);
+}
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
+.row label { color: var(--dim); font-size: 12px; min-width: 64px; text-transform: uppercase; letter-spacing: .5px; }
+.row select, .row input { flex: 1; min-width: 130px; }
+.valbox { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 130px; }
+.valbox input[type="range"] { flex: 1; accent-color: var(--ember); }
+.valbox .num { width: 86px; font-family: var(--mono); }
+.hint {
+  color: var(--dim);
+  font-size: 12px;
+  margin-top: 10px;
+  font-family: var(--mono);
+}
+
+/* ----------------------------- status strip (signature) ----------------- */
+.statusbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 20px;
+  background: rgba(13, 15, 20, 0.92);
+  border-top: 1px solid var(--edge);
+  backdrop-filter: blur(8px);
+  z-index: 9;
+  font-size: 12px;
+  color: var(--dim);
+}
+.statusbar .sep { color: var(--dim-2); }
+.statusbar .path {
+  font-family: var(--mono);
+  color: var(--dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 46ch;
+}
+.statusbar .backend {
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--panel-2);
+  border: 1px solid var(--edge);
+  color: var(--dim);
+}
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .3px;
+}
+.pill.clean { background: rgba(78,207,139,.12); color: var(--ok); border: 1px solid rgba(78,207,139,.3); }
+.pill.dirty { background: rgba(240,161,58,.14); color: var(--ember); border: 1px solid rgba(240,161,58,.32); }
+.pill .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.pill.dirty .dot { animation: pulse 1.8s ease-in-out infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+
+.statusbar .spacer { flex: 1; }
+
+/* ----------------------------- toast ------------------------------------ */
+.toast {
+  position: fixed;
+  bottom: 52px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: #000;
+  border: 1px solid var(--edge);
+  padding: 11px 18px;
+  border-radius: var(--radius-sm);
+  opacity: 0;
+  transition: opacity .25s, transform .25s;
+  pointer-events: none;
+  z-index: 20;
+  font-size: 13px;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.err { border-color: var(--bad); color: #ffd4d4; }
+.toast.ok { border-color: var(--ok); color: #d4ffe2; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    transition-duration: .001ms !important;
+  }
+}

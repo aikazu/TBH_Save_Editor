@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TBH Save Editor — Enchantments</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span class="mark">TBH <span>Save Editor</span></span>
+      <span class="sub">Enchanter's Workbench</span>
+    </div>
+    <div class="loadbar">
+      <input id="savePath" type="text" placeholder="Path to SaveFile_Live.es3" spellcheck="false" autocomplete="off">
+      <button id="btnLoad">Load</button>
+      <button id="btnSave" class="primary" disabled>Save to Game</button>
+    </div>
+  </header>
+
+  <main>
+    <aside id="heroPane" class="pane">
+      <h2>Heroes</h2>
+      <div id="heroList" class="list"></div>
+      <div id="heroEmpty" class="empty">
+        <strong>No save loaded</strong>
+        Load a save to see your heroes.
+      </div>
+    </aside>
+
+    <section id="itemPane" class="pane">
+      <h2>Equipped Items</h2>
+      <div id="itemGrid" class="grid"></div>
+      <div id="itemEmpty" class="empty">
+        <strong>Pick a hero</strong>
+        Their equipped items will appear here.
+      </div>
+    </section>
+
+    <section id="enchPane" class="pane wide">
+      <h2 id="enchTitle">Enchantments</h2>
+      <div id="enchBody"></div>
+      <div id="enchEmpty" class="empty">
+        <strong>Choose an item</strong>
+        Edit its decoration, engraving, and inscription slots here.
+      </div>
+    </section>
+  </main>
+
+  <footer class="statusbar">
+    <span class="pill clean" id="dirtyPill"><span class="dot"></span><span id="dirtyText">Saved</span></span>
+    <span class="path" id="statusPath" title="">No save loaded</span>
+    <span class="sep">·</span>
+    <span class="backend" id="backendBadge">AES: —</span>
+    <span class="spacer"></span>
+    <span>Close the game before saving</span>
+  </footer>
+
+  <div id="toast" class="toast"></div>
+  <script src="/app.js"></script>
+</body>
+</html>

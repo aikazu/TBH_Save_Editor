@@ -1,0 +1,198 @@
+﻿RuneKey,NameKey,MaxLevel,PrevNodeRequiredLevel,NextRuneKey,PreviewRuneKey,LevelDataKey,IconPath
+1,RuneName_AllHeroAttackDamage,1,,10 20,,1,AllHeroAttackDamage
+10,RuneName_AdditionalGoldStageBoss,3,,11 101 201,11001 11002,10,AdditionalGoldStageBoss
+20,RuneName_AdditionalExpStageBoss,3,,21 301 401,,20,AdditionalExpStageBoss
+11,RuneName_MaxInventorySlot,3,,12 11001 11002,13002,11,MaxInventorySlot
+12,RuneName_MaxInventorySlot,3,,13,,12,MaxInventorySlot
+13,RuneName_MaxInventorySlot,3,,14 13001 13002,,13,MaxInventorySlot
+14,RuneName_MaxInventorySlot,3,,15,,14,MaxInventorySlot
+15,RuneName_MaxInventorySlot,3,,16 15001 15002,,15,MaxInventorySlot
+16,RuneName_MaxInventorySlot,3,,1801 1901 16001,,16,MaxInventorySlot
+1801,RuneName_MaxInventorySlot,3,,1802,,1801,MaxInventorySlot
+1802,RuneName_MaxInventorySlot,3,,1803 180201,,1802,MaxInventorySlot
+1803,RuneName_MaxInventorySlot,3,,1804 180301,,1803,MaxInventorySlot
+1804,RuneName_MaxInventorySlot,3,,1805 180401,,1804,MaxInventorySlot
+1805,RuneName_MaxInventorySlot,3,,1806 180501,,1805,MaxInventorySlot
+1806,RuneName_MaxInventorySlot,3,,1807 180601,,1806,MaxInventorySlot
+1807,RuneName_MaxInventorySlot,3,,1808 180701,,1807,MaxInventorySlot
+1808,RuneName_MaxInventorySlot,3,,,,1808,MaxInventorySlot
+1901,RuneName_MaxInventorySlot,3,,1902,,1901,MaxInventorySlot
+1902,RuneName_MaxInventorySlot,3,,1903 1902001,,1902,MaxInventorySlot
+1903,RuneName_MaxInventorySlot,3,,1904 190301 190302,,1903,MaxInventorySlot
+1904,RuneName_MaxInventorySlot,3,,1905 190401,,1904,MaxInventorySlot
+1905,RuneName_MaxInventorySlot,3,,1906 190501 190502,,1905,MaxInventorySlot
+1906,RuneName_MaxInventorySlot,3,,1907,,1906,MaxInventorySlot
+1907,RuneName_MaxInventorySlot,3,,1908,,1907,MaxInventorySlot
+1908,RuneName_MaxInventorySlot,3,,,,1908,MaxInventorySlot
+11001,RuneName_UnlockOfflineReward,1,1,110011 110012,,11001,UnlockOfflineReward
+110011,RuneName_OfflineRewardGoldPercent,3,,,,110011,OfflineRewardGoldPercent
+110012,RuneName_OfflineRewardExpPercent,3,,,,110012,OfflineRewardExpPercent
+11002,RuneName_MaxAmountNormalChest,1,1,11003,,11002,MaxAmountNormalChest
+11003,RuneName_MaxAmountStageBossChest,1,,11004,,11003,MaxAmountStageBossChest
+11004,RuneName_MaxAmountActBossChest,1,,,,11004,MaxAmountActBossChest
+13001,RuneName_UnlockStashPageCount,1,,,,13001,UnlockStashPageCount
+13002,RuneName_UnlockAutoOpenNormalChest,1,1,130021,15001,13002,UnlockAutoOpenNormalChest
+130021,RuneName_ReduceAutoOpenNormalChestTime,3,,,,130021,ReduceAutoOpenNormalChestTime
+15001,RuneName_UnlockAutoOpenStageBossChest,1,1,150011,,15001,UnlockAutoOpenStageBossChest
+150011,RuneName_ReduceAutoOpenStageBossChestTime,3,,,,150011,ReduceAutoOpenStageBossChestTime
+15002,RuneName_OfflineRewardGoldPercent,3,,150021,,15002,OfflineRewardGoldPercent
+150021,RuneName_OfflineRewardExpPercent,3,,,,150021,OfflineRewardExpPercent
+16001,RuneName_UnlockStashPageCount,1,,160011,,16001,UnlockStashPageCount
+160011,RuneName_UnlockStashPageCount,1,,,,160011,UnlockStashPageCount
+180201,RuneName_OfflineRewardGoldPercent,5,,,,180201,OfflineRewardGoldPercent
+180301,RuneName_OfflineRewardExpPercent,5,,,,180301,OfflineRewardExpPercent
+180401,RuneName_OfflineRewardGoldPercent,5,,,,180401,OfflineRewardGoldPercent
+180501,RuneName_OfflineRewardExpPercent,5,,,,180501,OfflineRewardExpPercent
+180601,RuneName_OfflineRewardGoldPercent,5,,,,180601,OfflineRewardGoldPercent
+180701,RuneName_OfflineRewardExpPercent,5,,,,180701,OfflineRewardExpPercent
+1902001,RuneName_UnlockAutoOpenActBossChest,1,,19020011,,1902001,UnlockAutoOpenActBossChest
+19020011,RuneName_ReduceAutoOpenActBossChestTime,3,,,,19020011,ReduceAutoOpenActBossChestTime
+190301,RuneName_ReduceAutoOpenNormalChestTime,5,,,,190301,ReduceAutoOpenNormalChestTime
+190302,RuneName_ReduceAutoOpenStageBossChestTime,5,,,,190302,ReduceAutoOpenStageBossChestTime
+190401,RuneName_ReduceAutoOpenActBossChestTime,3,,,,190401,ReduceAutoOpenActBossChestTime
+190501,RuneName_ReduceAutoOpenNormalChestTime,5,,1905011,,190501,ReduceAutoOpenNormalChestTime
+1905011,RuneName_ReduceAutoOpenNormalChestTime,5,5,,,1905011,ReduceAutoOpenNormalChestTime
+190502,RuneName_ReduceAutoOpenStageBossChestTime,5,,1905021,,190502,ReduceAutoOpenStageBossChestTime
+1905021,RuneName_ReduceAutoOpenStageBossChestTime,5,5,,,1905021,ReduceAutoOpenStageBossChestTime
+21,RuneName_UnlockArrangeSlotCount,1,,22 25,23 24 26 27,21,UnlockArrangeSlotCount
+22,RuneName_MaxInventorySlot,3,,23,,22,MaxInventorySlot
+23,RuneName_MaxInventorySlot,5,1,24,,23,MaxInventorySlot
+24,RuneName_UnlockArrangeSlotCount,1,1,,,24,UnlockArrangeSlotCount
+25,RuneName_IncreaseGoldAmount,3,,26,,25,IncreaseGoldAmount
+26,RuneName_IncreaseExpAmount,3,1,27,,26,IncreaseExpAmount
+27,RuneName_UnlockSkillSlotCount,1,1,,,27,UnlockSkillSlotCount
+101,RuneName_DropChanceNormalChest,3,,102,1031,101,DropChanceNormalChest
+102,RuneName_DropChanceStageBossChest,3,,103 1021,,102,DropChanceStageBossChest
+103,RuneName_DropChanceNormalChest,5,,104 1031,,103,DropChanceNormalChest
+104,RuneName_DropChanceStageBossChest,5,,105,,104,DropChanceStageBossChest
+105,RuneName_DropChanceNormalChest,5,,106 1051,,105,DropChanceNormalChest
+106,RuneName_DropChanceStageBossChest,5,,107 1061,,106,DropChanceStageBossChest
+107,RuneName_DropChanceNormalChest,5,,108 1071 1072,,107,DropChanceNormalChest
+108,RuneName_DropChanceStageBossChest,5,,109,,108,DropChanceStageBossChest
+109,RuneName_DropChanceNormalChest,5,,110 1091,,109,DropChanceNormalChest
+110,RuneName_DropChanceStageBossChest,5,,111 1101 1102,,110,DropChanceStageBossChest
+111,RuneName_DropChanceNormalChest,5,,112 1111,,111,DropChanceNormalChest
+112,RuneName_DropChanceStageBossChest,5,,113 1121,,112,DropChanceStageBossChest
+113,RuneName_DropChanceNormalChest,5,,114 1131 1132,,113,DropChanceNormalChest
+114,RuneName_DropChanceStageBossChest,5,,115 1141 1142,,114,DropChanceStageBossChest
+115,RuneName_DropChanceNormalChest,5,,116,,115,DropChanceNormalChest
+116,RuneName_DropChanceStageBossChest,5,,117 1161,,116,DropChanceStageBossChest
+117,RuneName_DropChanceNormalChest,5,,118 1171 1172,,117,DropChanceNormalChest
+118,RuneName_DropChanceStageBossChest,5,,119 1181 1182,,118,DropChanceStageBossChest
+119,RuneName_DropChanceNormalChest,5,,120 1191,,119,DropChanceNormalChest
+120,RuneName_DropChanceStageBossChest,5,,121 1201 1202 1203,,120,DropChanceStageBossChest
+121,RuneName_DropChanceNormalChest,5,,122,,121,DropChanceNormalChest
+122,RuneName_DropChanceStageBossChest,5,,123 1221 1222,,122,DropChanceStageBossChest
+123,RuneName_DropChanceNormalChest,5,,124,,123,DropChanceNormalChest
+124,RuneName_DropChanceStageBossChest,5,,125 1241,,124,DropChanceStageBossChest
+125,RuneName_DropChanceNormalChest,5,,126 1251 1252,,125,DropChanceNormalChest
+126,RuneName_DropChanceStageBossChest,5,,127 1261 1262,,126,DropChanceStageBossChest
+127,RuneName_DropChanceNormalChest,5,,128,,127,DropChanceNormalChest
+128,RuneName_DropChanceStageBossChest,5,,1281 1282,,128,DropChanceStageBossChest
+1021,RuneName_OpenOneTypeChestAllAtOnce,1,,,,1021,OpenOneTypeChestAllAtOnce
+1031,RuneName_MaxAmountNormalChest,1,1,,1071,1031,MaxAmountNormalChest
+1051,RuneName_MaxInventorySlot,5,,1052 1053 1055 1056,,1051,MaxInventorySlot
+1052,RuneName_MaxAmountNormalChest,1,,1054,,1052,MaxAmountNormalChest
+1053,RuneName_DropChanceNormalChest,3,5,,,1053,DropChanceNormalChest
+1054,RuneName_MaxInventorySlot,5,,,,1054,MaxInventorySlot
+1055,RuneName_OpenAllTypeChestAllAtOnce,1,,,,1055,OpenAllTypeChestAllAtOnce
+1056,RuneName_MaxAmountActBossChest,1,,,,1056,MaxAmountActBossChest
+1061,RuneName_MaxAmountNormalChest,1,,,,1061,MaxAmountNormalChest
+1071,RuneName_MaxAmountStageBossChest,1,1,,,1071,MaxAmountStageBossChest
+1072,RuneName_MaxAmountNormalChest,1,,,,1072,MaxAmountNormalChest
+1091,RuneName_MaxAmountNormalChest,1,,,,1091,MaxAmountNormalChest
+1101,RuneName_MaxAmountNormalChest,1,,,,1101,MaxAmountNormalChest
+1102,RuneName_MaxAmountStageBossChest,1,,,,1102,MaxAmountStageBossChest
+1111,RuneName_MaxAmountStageBossChest,1,,,,1111,MaxAmountStageBossChest
+1121,RuneName_MaxAmountNormalChest,1,,,,1121,MaxAmountNormalChest
+1131,RuneName_MaxAmountNormalChest,1,,,,1131,MaxAmountNormalChest
+1132,RuneName_MaxAmountStageBossChest,1,,,,1132,MaxAmountStageBossChest
+1133,RuneName_MaxAmountActBossChest,1,,,,1133,MaxAmountActBossChest
+1141,RuneName_MaxAmountStageBossChest,1,,,,1141,MaxAmountStageBossChest
+1142,RuneName_MaxAmountNormalChest,1,,,,1142,MaxAmountNormalChest
+1161,RuneName_MaxAmountNormalChest,1,,11611,,1161,MaxAmountNormalChest
+11611,RuneName_MaxAmountNormalChest,1,,,,11611,MaxAmountNormalChest
+1171,RuneName_WaveCountReduction,1,,,,1171,WaveCountReduction
+1172,RuneName_MaxAmountStageBossChest,1,,,,1172,MaxAmountStageBossChest
+1181,RuneName_MaxAmountStageBossChest,1,,,,1181,MaxAmountStageBossChest
+1182,RuneName_MaxAmountActBossChest,1,,,,1182,MaxAmountActBossChest
+1191,RuneName_MaxAmountNormalChest,1,,,,1191,MaxAmountNormalChest
+1201,RuneName_MaxAmountNormalChest,1,,,,1201,MaxAmountNormalChest
+1202,RuneName_MaxAmountStageBossChest,1,,,,1202,MaxAmountStageBossChest
+1203,RuneName_MaxAmountActBossChest,1,,,,1203,MaxAmountActBossChest
+1221,RuneName_MaxAmountStageBossChest,1,,,,1221,MaxAmountStageBossChest
+1222,RuneName_MaxAmountActBossChest,1,,,,1222,MaxAmountActBossChest
+1241,RuneName_MaxAmountNormalChest,1,,,,1241,MaxAmountNormalChest
+1251,RuneName_MaxAmountStageBossChest,1,,,,1251,MaxAmountStageBossChest
+1252,RuneName_MaxAmountActBossChest,1,,,,1252,MaxAmountActBossChest
+1261,RuneName_MaxAmountStageBossChest,1,,,,1261,MaxAmountStageBossChest
+1262,RuneName_MaxAmountActBossChest,1,,,,1262,MaxAmountActBossChest
+1281,RuneName_MaxAmountStageBossChest,1,,,,1281,MaxAmountStageBossChest
+1282,RuneName_MaxAmountActBossChest,1,,12821,,1282,MaxAmountActBossChest
+12821,RuneName_MaxAmountActBossChest,1,,,,12821,MaxAmountActBossChest
+201,RuneName_AdditionalGold,1,,202,,201,AdditionalGold
+202,RuneName_IncreaseGoldAmount,5,,203,,202,IncreaseGoldAmount
+203,RuneName_AdditionalGoldStageBoss,5,,204 2031,,203,AdditionalGoldStageBoss
+204,RuneName_AdditionalGoldNormalMonster,1,,205,,204,AdditionalGoldNormalMonster
+205,RuneName_AdditionalGoldActBoss,5,,206,,205,AdditionalGoldActBoss
+206,RuneName_IncreaseGoldAmount,5,,207,,206,IncreaseGoldAmount
+207,RuneName_AdditionalGoldStageBoss,5,,208 2071,,207,AdditionalGoldStageBoss
+208,RuneName_IncreaseGoldAmount,5,,209,,208,IncreaseGoldAmount
+209,RuneName_AdditionalGoldStageBoss,5,,210 2091,,209,AdditionalGoldStageBoss
+210,RuneName_IncreaseGoldAmount,5,,211,,210,IncreaseGoldAmount
+211,RuneName_AdditionalGoldStageBoss,5,,212 2111,,211,AdditionalGoldStageBoss
+212,RuneName_IncreaseGoldAmount,5,,213,,212,IncreaseGoldAmount
+213,RuneName_AdditionalGoldStageBoss,5,,214 2131 2132,,213,AdditionalGoldStageBoss
+214,RuneName_IncreaseGoldAmount,5,,215,,214,IncreaseGoldAmount
+215,RuneName_AdditionalGoldStageBoss,5,,2151,,215,AdditionalGoldStageBoss
+2031,RuneName_CubeAlchemyGoldPercent,1,,2032,,2031,CubeAlchemyGoldPercent
+2032,RuneName_CubeExpPercent,5,,,,2032,CubeExpPercent
+2071,RuneName_AdditionalGoldNormalMonster,1,,,,2071,AdditionalGoldNormalMonster
+2091,RuneName_AdditionalGoldActBoss,5,,,,2091,AdditionalGoldActBoss
+2111,RuneName_AdditionalGold,5,,,,2111,AdditionalGold
+2131,RuneName_CubeAlchemyGoldPercent,3,,,,2131,CubeAlchemyGoldPercent
+2132,RuneName_CubeExpPercent,5,,,,2132,CubeExpPercent
+2151,RuneName_AdditionalGoldNormalMonster,2,,2152,,2151,AdditionalGoldNormalMonster
+2152,RuneName_AdditionalGoldActBoss,5,,,,2152,AdditionalGoldActBoss
+301,RuneName_AdditionalExp,1,,302,,301,AdditionalExp
+302,RuneName_IncreaseExpAmount,5,,303 3031,,302,IncreaseExpAmount
+303,RuneName_AdditionalExpStageBoss,5,,304,,303,AdditionalExpStageBoss
+304,RuneName_AdditionalExpNormalMonster,1,,305,,304,AdditionalExpNormalMonster
+305,RuneName_AdditionalExpActBoss,3,,306,,305,AdditionalExpActBoss
+306,RuneName_IncreaseExpAmount,5,,307 3061,,306,IncreaseExpAmount
+307,RuneName_AdditionalExpStageBoss,5,,308,,307,AdditionalExpStageBoss
+308,RuneName_IncreaseExpAmount,5,,309,,308,IncreaseExpAmount
+309,RuneName_AdditionalExpStageBoss,5,,310 3091,,309,AdditionalExpStageBoss
+310,RuneName_IncreaseExpAmount,5,,311,,310,IncreaseExpAmount
+311,RuneName_AdditionalExpStageBoss,5,,312,,311,AdditionalExpStageBoss
+312,RuneName_IncreaseExpAmount,5,,313 3121,,312,IncreaseExpAmount
+313,RuneName_AdditionalExpStageBoss,5,,314,,313,AdditionalExpStageBoss
+314,RuneName_IncreaseExpAmount,5,,315,,314,IncreaseExpAmount
+315,RuneName_AdditionalExpStageBoss,5,,3151 3152,,315,AdditionalExpStageBoss
+3031,RuneName_CubeExpPercent,1,,3032,,3031,CubeExpPercent
+3032,RuneName_CubeAlchemyGoldPercent,5,,,,3032,CubeAlchemyGoldPercent
+3061,RuneName_AdditionalExpActBoss,5,,,,3061,AdditionalExpActBoss
+3091,RuneName_AdditionalExpNormalMonster,1,,,,3091,AdditionalExpNormalMonster
+3121,RuneName_CubeExpPercent,5,,3122,,3121,CubeExpPercent
+3122,RuneName_CubeAlchemyGoldPercent,5,,,,3122,CubeAlchemyGoldPercent
+3151,RuneName_AdditionalExp,5,,,,3151,AdditionalExp
+3152,RuneName_AdditionalExpActBoss,5,,,,3152,AdditionalExpActBoss
+401,RuneName_AllHeroArmor,3,,402,4031,401,AllHeroArmor
+402,RuneName_AllHeroMoveSpeed,3,,403,,402,AllHeroMoveSpeed
+403,RuneName_AllHeroArmor,10,,404 4031,,403,AllHeroArmor
+404,RuneName_AllHeroMoveSpeed,5,,405,,404,AllHeroMoveSpeed
+405,RuneName_AllHeroAttackDamagePercent,10,,406,,405,AllHeroAttackDamagePercent
+406,RuneName_AllHeroMoveSpeed,5,,407 4061,,406,AllHeroMoveSpeed
+407,RuneName_AllHeroArmorPercent,5,,408,,407,AllHeroArmorPercent
+408,RuneName_AllHeroAttackDamagePercent,5,,409 4081,,408,AllHeroAttackDamagePercent
+409,RuneName_AllHeroAttackSpeed,5,,410,,409,AllHeroAttackSpeed
+410,RuneName_AllHeroArmor,5,,411 4101,,410,AllHeroArmor
+411,RuneName_AllHeroAttackDamage,5,,412,,411,AllHeroAttackDamage
+412,RuneName_AllHeroArmorPercent,5,,413,,412,AllHeroArmorPercent
+413,RuneName_AllHeroAttackDamagePercent,5,,414,,413,AllHeroAttackDamagePercent
+414,RuneName_AllHeroAttackSpeed,5,,,,414,AllHeroAttackSpeed
+4031,RuneName_AllHeroAttackDamage,1,1,,,4031,AllHeroAttackDamage
+4061,RuneName_AllHeroAttackSpeed,3,,,,4061,AllHeroAttackSpeed
+4081,RuneName_AllHeroAttackDamage,5,,4082,,4081,AllHeroAttackDamage
+4082,RuneName_AllHeroMoveSpeed,1,,,,4082,AllHeroMoveSpeed
+4101,RuneName_AllHeroMoveSpeed,5,,,,4101,AllHeroMoveSpeed

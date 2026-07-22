@@ -1,0 +1,6 @@
+.playwright-mcp
+.zcode
+__pycache__/
+*.pyc
+*.es3
+*.es3.bak
