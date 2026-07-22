@@ -278,15 +278,22 @@ async function openEditor(slotEl, e) {
   const selTier = el("select");
   rowTier.append(selTier);
   // 3) Value (defaults to MAX; material is carried silently from the chosen tier)
+  // In Custom Edit mode the slider + Max button are hidden and the number field
+  // is unbounded (no min/max/step) so any value can be forced into the slot.
+  const isCustom = $("#cbCustom").checked;
   const rowVal = el("div", "row");
   rowVal.append(el("label", null, "Value"));
-  const valWrap = el("div", "valbox");
+  const valWrap = el("div", "valbox" + (isCustom ? " custom" : ""));
   const rng = el("input");
   rng.type = "range";
   const num = el("input", "num");
   num.type = "number";
   const maxBtn = el("button", "", "Max");
-  valWrap.append(rng, num, maxBtn);
+  if (isCustom) {
+    valWrap.append(num);
+  } else {
+    valWrap.append(rng, num, maxBtn);
+  }
   rowVal.append(valWrap);
   const hint = el("div", "hint");
   box.append(rowStat, rowTier, rowVal, hint);
@@ -321,22 +328,34 @@ async function openEditor(slotEl, e) {
     const o = options[selStat.value];
     if (!o) return;
     const t = o.tiers.find((x) => String(x.tier) === String(selTier.value)) || o.tiers[o.tiers.length - 1];
-    rng.min = num.min = t.min;
-    rng.max = num.max = t.max;
-    rng.step = num.step = t.interval || 1;
-    // Editing a filled slot: keep its value when inside range; otherwise default to MAX.
-    const v = e.filled && e.value >= t.min && e.value <= t.max ? e.value : t.max;
-    rng.value = num.value = v;
-    const unit = o.isPercent ? "%" : "";
-    hint.textContent = `${o.statName} · T${t.tier} · range ${t.min}${unit}–${t.max}${unit} (step ${t.interval})`;
+    if (isCustom) {
+      // No bounds: leave the field free. Seed with the slot's current value when
+      // editing, otherwise the tier MAX as a sensible starting point.
+      num.min = num.max = num.step = "";
+      const v = e.filled ? e.value : t.max;
+      num.value = v;
+      const unit = o.isPercent ? "%" : "";
+      hint.textContent = `⚠ Custom mode — no validation. ${o.statName} · T${t.tier} · nominal range ${t.min}${unit}–${t.max}${unit}`;
+    } else {
+      rng.min = num.min = t.min;
+      rng.max = num.max = t.max;
+      rng.step = num.step = t.interval || 1;
+      // Editing a filled slot: keep its value when inside range; otherwise default to MAX.
+      const v = e.filled && e.value >= t.min && e.value <= t.max ? e.value : t.max;
+      rng.value = num.value = v;
+      const unit = o.isPercent ? "%" : "";
+      hint.textContent = `${o.statName} · T${t.tier} · range ${t.min}${unit}–${t.max}${unit} (step ${t.interval})`;
+    }
   }
   selStat.onchange = onStat;
   selTier.onchange = onTier;
-  rng.oninput = () => (num.value = rng.value);
-  num.oninput = () => (rng.value = num.value);
-  maxBtn.onclick = () => {
-    num.value = rng.value = rng.max;
-  };
+  if (!isCustom) {
+    rng.oninput = () => (num.value = rng.value);
+    num.oninput = () => (rng.value = num.value);
+    maxBtn.onclick = () => {
+      num.value = rng.value = rng.max;
+    };
+  }
 
   const apply = el("button", "primary", "Apply");
   apply.onclick = () => {
@@ -351,6 +370,7 @@ async function openEditor(slotEl, e) {
         statModKey: t.statModKey,
         tier: +selTier.value,
         value: +num.value,
+        force: isCustom,
       },
       close
     );
@@ -389,4 +409,25 @@ $("#btnSave").onclick = doSave;
 $("#savePath").addEventListener("keydown", (e) => {
   if (e.key === "Enter") doLoad();
 });
+// Custom Edit mode toggle: warn the user before bypassing game-table validation.
+$("#cbCustom").onchange = function () {
+  if (this.checked) {
+    const ok = confirm(
+      "⚠️ Custom Edit Mode\n\n" +
+      "Mode ini MENONAKTIFKAN validasi game-table. Value yang Anda masukkan " +
+      "akan langsung ditulis ke save apa adanya (tetap pakai skala tampilan).\n\n" +
+      "Slot yang diedit sambil mode ini aktif bisa menghasilkan enchantment " +
+      "yang TIDAK legit menurut game — risiko ditolak/banned di tanggung sendiri.\n\n" +
+      "Lanjutkan?"
+    );
+    if (!ok) {
+      this.checked = false;
+      this.closest(".custom-toggle").classList.remove("on");
+      return;
+    }
+    this.closest(".custom-toggle").classList.add("on");
+  } else {
+    this.closest(".custom-toggle").classList.remove("on");
+  }
+};
 boot();

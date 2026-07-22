@@ -189,9 +189,13 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 ed = GD.build_enchant(slot, int(body["materialKey"]), statmodkey, tier, raw_value)
             except Exception as e:
                 return self._send(400, {"error": str(e)})
-            errs = GD.validate_enchant(slot, it["ItemKey"], ed)
-            if errs:
-                return self._send(400, {"error": "; ".join(errs)})
+            # Custom Edit mode: skip game-table validation so the user can force
+            # any value. The enchant is still built via build_enchant (consistent
+            # struct) and EnchantCount is still recounted so the effect activates.
+            if not body.get("force"):
+                errs = GD.validate_enchant(slot, it["ItemKey"], ed)
+                if errs:
+                    return self._send(400, {"error": "; ".join(errs)})
             it["EnchantData"][slot] = ed
             GD.bump_applied(it, slot)     # +1 to the type's AppliedTotalCount
             GD.recount_enchants(it)       # EnchantCount = active slots per type (ACTIVATES the effect in-game)
