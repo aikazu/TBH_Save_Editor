@@ -229,10 +229,7 @@ class GameData:
         "DamageAddition": (10, True), "FireDamageAddition": (10, True),
         "ColdDamageAddition": (10, True), "LightningDamageAddition": (10, True),
         "ChaosDamageAddition": (10, True), "PhysicalDamageAddition": (10, True),
-        # /10 flat: stored as raw*10 but rendered as a plain integer (no %).
-        # E.g. DamageAbsorption T8 raw 40-50 -> display 4-5.
-        "DamageAbsorption": (10, False),
-        # flat (raw as-is, no unit): AddHpPerHit, AddHpPerKill,
+        # flat (raw as-is, no unit): AddHpPerHit, AddHpPerKill, DamageAbsorption,
         # HpRegenPerSec, BaseAttackCountReduction, Multistrike, ProjectileCount,
         # AdditionalExp, IncreaseExpAmount -> default (1, False) below.
         # AttackDamage/Armor/MaxHp/MovementSpeed/CriticalChance have FLAT and
