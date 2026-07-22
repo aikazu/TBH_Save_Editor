@@ -310,7 +310,11 @@ async function openEditor(slotEl, e) {
       return;
     }
     o.tiers.forEach((t) => selTier.append(new Option("Tier " + t.tier, t.tier)));
-    if (e.filled && String(e.tier) !== "") selTier.value = String(e.tier);
+    // Editing a filled slot: keep its current tier when still valid.
+    // Picking a new stat: auto-select the HIGHEST tier (bottom of the list).
+    const keepTier = e.filled && String(e.tier) !== "" &&
+      o.tiers.some((t) => String(t.tier) === String(e.tier));
+    selTier.value = keepTier ? String(e.tier) : String(o.tiers[o.tiers.length - 1].tier);
     onTier();
   }
   function onTier() {
@@ -320,6 +324,7 @@ async function openEditor(slotEl, e) {
     rng.min = num.min = t.min;
     rng.max = num.max = t.max;
     rng.step = num.step = t.interval || 1;
+    // Editing a filled slot: keep its value when inside range; otherwise default to MAX.
     const v = e.filled && e.value >= t.min && e.value <= t.max ? e.value : t.max;
     rng.value = num.value = v;
     const unit = o.isPercent ? "%" : "";
