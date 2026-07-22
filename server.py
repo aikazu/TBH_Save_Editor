@@ -260,13 +260,13 @@ def print_banner():
     for line in BANNER.splitlines():
         if line.strip():
             print(C.cyan(C.bold(line)))
-    print(C.dim("       Enchantment Editor for TaskbarHero  -  local web app (zero deps)"))
+    print(C.dim("       Enchantment Editor for TaskbarHero"))
     print()
 
 
 def print_status_panel(url, save_path, aes_backend):
     """Print a tidy box with server status info."""
-    aes_label = "pure-python (fallback, no deps)" if "pure" in aes_backend.lower() else aes_backend
+    aes_label = "pure-python" if "pure" in aes_backend.lower() else aes_backend
     save_label = save_path if save_path else "(auto-detect: AppData\\LocalLow\\TesseractStudio\\TaskbarHero)"
     rows = [
         ("URL",        C.green(url)),
@@ -299,10 +299,6 @@ def main():
     except KeyboardInterrupt:
         print()
         print(C.dim("  ✦ ") + C.magenta("Shutting down. Bye!"))
-
-
-if __name__ == "__main__":
-    main()
 
 
 if __name__ == "__main__":
