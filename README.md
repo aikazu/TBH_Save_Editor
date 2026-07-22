@@ -23,7 +23,7 @@
 **Prerequisites:** Python 3. Nothing else. No `pip install`.
 
 ```powershell
-cd saveEditor
+cd TBH_Save_Editor
 python server.py
 ```
 
