@@ -34,6 +34,7 @@
 
 - [✨ Features](#-features)
 - [🚀 Quick Start](#-quick-start)
+- [🎬 Video Tutorial](#-video-tutorial)
 - [🏗 Architecture](#-architecture)
 - [📂 Project Layout](#-project-layout)
 - [🔍 How Validation Works](#-how-validation-works)
@@ -79,6 +80,17 @@ Opens `http://127.0.0.1:8765` in your browser. The save path is auto-filled.
 | 5 | **Save to Game** | Writes `.es3` (with `.bak` backup) and recomputes `SystemInfo` |
 
 > ⚠️ **Close the game before saving** — otherwise it overwrites the file on exit.
+
+---
+
+## 🎬 Video Tutorial
+
+<video src="docs/tutorial_tbh_save_editor.webm" controls preload="metadata" width="100%" style="max-width:960px"></video>
+
+> 📝 **Note:** in the video I save *while the game is still running*, so the
+> save gets overwritten on exit and the edits don't stick. **Close the game
+> completely first, then save** — otherwise you'll have to re-load and re-edit
+> like I did in the recording.
 
 ---
 
