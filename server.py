@@ -287,7 +287,7 @@ def print_status_panel(url, save_path, aes_backend):
         pad = " " * (width - len(k))
         print("  " + C.dim(k + ":") + pad + " " + v)
     print(border)
-    print(C.dim("  › Tekan Ctrl+C untuk keluar"))
+    print(C.dim("  › Press Ctrl+C to exit"))
 
 
 def main():

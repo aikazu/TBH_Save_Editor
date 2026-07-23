@@ -414,11 +414,11 @@ $("#cbCustom").onchange = function () {
   if (this.checked) {
     const ok = confirm(
       "⚠️ Custom Edit Mode\n\n" +
-      "Mode ini MENONAKTIFKAN validasi game-table. Value yang Anda masukkan " +
-      "akan langsung ditulis ke save apa adanya (tetap pakai skala tampilan).\n\n" +
-      "Slot yang diedit sambil mode ini aktif bisa menghasilkan enchantment " +
-      "yang TIDAK legit menurut game — risiko ditolak/banned di tanggung sendiri.\n\n" +
-      "Lanjutkan?"
+      "This DISABLES game-table validation. Any value you enter will be " +
+      "written directly to the save (still using display scale).\n\n" +
+      "Slots edited while this mode is active may produce enchantments that " +
+      "are NOT legit according to the game — risk of rejection or ban is yours.\n\n" +
+      "Continue?"
     );
     if (!ok) {
       this.checked = false;
