@@ -234,8 +234,11 @@ class GameData:
         # stores raw*10, so the editor must mirror the game's own scaling for
         # consistency. is_percent=False because no "%" suffix is shown.
         "DamageAbsorption": (10, False),
+        # /100 flat: stored as raw*100, shown as a plain integer (no %).
+        # E.g. HpRegenPerSec T9 raw 1000-1500 -> display 10-15.
+        "HpRegenPerSec": (100, False),
         # flat (raw as-is, no unit): AddHpPerHit, AddHpPerKill,
-        # HpRegenPerSec, BaseAttackCountReduction, Multistrike, ProjectileCount,
+        # BaseAttackCountReduction, Multistrike, ProjectileCount,
         # AdditionalExp, IncreaseExpAmount -> default (1, False) below.
         # AttackDamage/Armor/MaxHp/MovementSpeed/CriticalChance have FLAT and
         # ADDITIVE variants -> resolved per-MODTYPE via VARIANT_STATS.
