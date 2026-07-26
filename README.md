@@ -85,7 +85,7 @@ Opens `http://127.0.0.1:8765` in your browser. The save path is auto-filled.
 
 ## 🎬 Video Tutorial
 
-<video src="docs/tutorial_tbh_save_editor.webm" controls preload="metadata" width="100%" style="max-width:960px"></video>
+https://github.com/user-attachments/assets/4e61598e-926d-49f5-abed-7a0fc7c2aab1
 
 > 📝 **Note:** in the video I save *while the game is still running*, so the
 > save gets overwritten on exit and the edits don't stick. **Close the game
