@@ -14,11 +14,10 @@ import csv
 import json
 import os
 import re
+from decimal import Decimal, InvalidOperation, localcontext
 
 # slot index -> required material type
 SLOT_MATERIAL_TYPE = ["DECORATION", "DECORATION", "ENGRAVING", "ENGRAVING", "INSCRIPTION", "INSCRIPTION"]
-# material type -> RecipeType (ERecipeType)
-RECIPE_TYPE = {"DECORATION": 3, "ENGRAVING": 4, "INSCRIPTION": 5}
 
 
 def _read_csv(path):
@@ -65,6 +64,7 @@ class GameData:
         enums = json.load(open(os.path.join(data_dir, "enums.json"), encoding="utf-8"))
         self.stat_name_to_id = {v: int(k) for k, v in enums["StatType"].items()}
         self.modtype_name_to_id = {v: int(k) for k, v in enums["MODTYPE"].items()}
+        self.recipe_name_to_id = {v: int(k) for k, v in enums["ERecipeType"].items()}
         self.egrade = enums["EGradeType"]  # id(str) -> name
         self.grades_by_name = {r["GRADE"]: r for r in _read_csv(os.path.join(t, "GradeInfoData.csv"))}
         self.hero_info = {r["HeroKey"]: r for r in _read_csv(os.path.join(t, "HeroInfoData.csv"))}
@@ -260,17 +260,42 @@ class GameData:
     def is_percent(cls, stattype_name, modtype):
         return cls._display_rule(stattype_name, modtype)[1]
 
+    @staticmethod
+    def _decimal(value):
+        try:
+            number = Decimal(str(value))
+        except InvalidOperation as exc:
+            raise ValueError("Value must be a finite number") from exc
+        if not number.is_finite():
+            raise ValueError("Value must be a finite number")
+        return number
+
     @classmethod
     def to_display(cls, value, stattype_name, modtype):
         """Raw save value -> human-readable scale."""
+        raw = cls._decimal(value)
+        if raw != raw.to_integral_value():
+            raise ValueError("Raw value must be an integer")
         div = cls._display_rule(stattype_name, modtype)[0]
-        return int(value) // div
+        with localcontext() as context:
+            context.prec = max(28, len(raw.as_tuple().digits) + len(str(div)))
+            display = raw / div
+        if display == display.to_integral_value():
+            return int(display)
+        result = float(display)
+        if cls._decimal(result) != display:
+            raise ValueError("Value is too precise to display without loss")
+        return result
 
     @classmethod
     def to_raw(cls, value, stattype_name, modtype):
         """Human-readable value -> raw save value."""
         div = cls._display_rule(stattype_name, modtype)[0]
-        return int(value) * div
+        numerator, denominator = cls._decimal(value).as_integer_ratio()
+        raw, remainder = divmod(numerator * div, denominator)
+        if remainder:
+            raise ValueError("Value must resolve to a whole raw save value")
+        return raw
 
     def stat_first_options(self, slot_index, gear_group):
         """Stat-first view: for a slot's material type, merges every material's
@@ -322,7 +347,7 @@ class GameData:
                             "materialKey": int(mk),
                             "min": self.to_display(si["MinValue"], st, mtp),
                             "max": self.to_display(si["MaxValue"], st, mtp),
-                            "interval": self.to_display(si["Interval"], st, mtp) or 1,
+                            "interval": self.to_display(si["Interval"], st, mtp),
                         }
         # flatten to sorted lists
         out = []
@@ -360,22 +385,26 @@ class GameData:
         return {
             "StatModKey": int(statmodkey),
             "Tier": int(tier),
-            "Value": int(value),
-            "RecipeType": RECIPE_TYPE[mtype],
-            "ModType": self.modtype_name_to_id.get(si["MODTYPE"], 0),
+            "Value": self.to_raw(value, "", ""),
+            "RecipeType": self.recipe_name_to_id[mtype],
+            "ModType": self.modtype_name_to_id[si["MODTYPE"]],
             "MaterialKey": int(material_key),
-            "StatType": self.stat_name_to_id.get(si["STATTYPE"], 0),
+            "StatType": self.stat_name_to_id[si["STATTYPE"]],
         }
 
     def empty_enchant(self):
         return {"StatModKey": 0, "Tier": 0, "Value": 0, "RecipeType": 0,
                 "ModType": 0, "MaterialKey": 0, "StatType": 0}
 
-    def validate_enchant(self, slot_index, item_key, ed):
-        """Validates consistency of a (non-empty) EnchantData. Returns list of errors (empty = ok)."""
+    def validate_enchant(self, slot_index, item_key, ed, check_value=True):
+        """Validate identity and integer raw value; optionally enforce the table range and step."""
         errs = []
-        if not ed or ed.get("MaterialKey", 0) == 0:
-            return errs  # empty slot is valid
+        if not ed:
+            return errs
+        if ed.get("MaterialKey", 0) == 0:
+            if any(ed.get(field, 0) != 0 for field in self.empty_enchant()):
+                return ["Empty enchant must have zero stat, tier, value, and metadata"]
+            return errs
         mk = str(ed["MaterialKey"])
         mat = self.materials.get(mk)
         if not mat:
@@ -392,7 +421,21 @@ class GameData:
         if not tier:
             errs.append(f"Tier {ed.get('Tier')} is invalid for this stat")
             return errs
-        v = ed.get("Value", 0)
+        expected = {
+            "RecipeType": self.recipe_name_to_id[want],
+            "StatType": self.stat_name_to_id[tier["statType"]],
+            "ModType": self.modtype_name_to_id[tier["modType"]],
+        }
+        for field, value in expected.items():
+            if ed.get(field) != value:
+                errs.append(f"{field} {ed.get(field)} does not match expected {value}")
+        try:
+            v = self.to_raw(ed.get("Value", 0), "", "")
+        except ValueError as exc:
+            errs.append(str(exc))
+            return errs
+        if not check_value:
+            return errs
         if not (tier["min"] <= v <= tier["max"]):
             errs.append(f"Value {v} is outside range [{tier['min']},{tier['max']}]")
         elif tier["interval"] and (v - tier["min"]) % tier["interval"] != 0:

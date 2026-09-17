@@ -3,64 +3,59 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>TBH Save Editor — Enchantments</title>
+  <meta name="color-scheme" content="dark">
+  <title>TBH · Enchantment workbench</title>
   <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
 </head>
 <body>
-  <header>
-    <div class="brand">
-      <span class="mark">TBH <span>Save Editor</span></span>
-      <span class="sub">Enchanter's Workbench</span>
-    </div>
-    <div class="loadbar">
-      <input id="savePath" type="text" placeholder="Path to SaveFile_Live.es3" spellcheck="false" autocomplete="off">
-      <button id="btnLoad">Load</button>
-      <button id="btnSave" class="primary" disabled>Save to Game</button>
-      <label class="custom-toggle" title="Bypass game-table validation so any value can be forced into a slot.">
-        <input type="checkbox" id="cbCustom"> Custom Edit
-      </label>
-    </div>
+  <a class="skip-link" href="#enchPane">Skip to enchantments</a>
+  <header class="app-header">
+    <div class="identity"><span class="wordmark">TBH</span><div><h1>Enchantment workbench</h1><p>Task Bar Hero save editor</p></div></div>
+    <div class="header-meta"><span id="versionLabel">Reading game tables…</span><span class="local-label">On your device</span></div>
   </header>
-
-  <main>
-    <aside id="heroPane" class="pane">
-      <h2>Heroes</h2>
-      <div id="heroList" class="list"></div>
-      <div id="heroEmpty" class="empty">
-        <strong>No save loaded</strong>
-        Load a save to see your heroes.
-      </div>
+  <section class="save-strip" aria-label="Save file">
+    <form id="loadForm" action="/api/load" method="post">
+      <div class="path-field"><label for="savePath">Save file</label><input id="savePath" name="path" type="text" placeholder="Path to SaveFile_Live.es3" spellcheck="false" autocomplete="off" required></div>
+      <button id="btnLoad" class="secondary" type="submit">Load save</button>
+    </form>
+    <div class="save-actions"><span id="dirtyText" role="status">No save loaded</span><button id="btnSave" class="primary" type="button" disabled>Review &amp; save</button></div>
+  </section>
+  <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+  <p id="versionWarning" class="version-warning" hidden></p>
+  <main id="workbench" class="workbench">
+    <aside id="heroPane" class="hero-pane" aria-labelledby="heroTitle">
+      <div class="pane-heading"><h2 id="heroTitle"><span class="step">01</span> Heroes</h2><span id="heroCount" class="count"></span></div>
+      <div id="heroList" class="hero-list"></div>
+      <div id="heroEmpty" class="small-empty">Your heroes appear here after loading a save.</div>
+      <div class="rail-note"><p>Make it your build.</p><span>Choose a hero, select their equipment, then tune each enchant.</span></div>
     </aside>
-
-    <section id="itemPane" class="pane">
-      <h2>Equipped Items</h2>
-      <div id="itemGrid" class="grid"></div>
-      <div id="itemEmpty" class="empty">
-        <strong>Pick a hero</strong>
-        Their equipped items will appear here.
-      </div>
+    <section id="itemPane" class="equipment-pane" aria-labelledby="itemTitle">
+      <div class="pane-heading"><h2 id="itemTitle"><span class="step">02</span> Equipment</h2><span id="itemCount" class="count"></span></div>
+      <div id="heroSummary" class="hero-summary" hidden></div>
+      <div id="itemTools" class="item-tools" hidden><label for="itemSearch">Find equipment</label><input id="itemSearch" type="search" name="equipment" placeholder="Name or rarity" autocomplete="off"></div>
+      <div id="itemGrid" class="item-list"></div>
+      <div id="itemEmpty" class="empty-state"><strong>Choose your hero</strong><p>Their equipped items will appear here.</p></div>
     </section>
-
-    <section id="enchPane" class="pane wide">
-      <h2 id="enchTitle">Enchantments</h2>
+    <section id="enchPane" class="enchant-pane" aria-labelledby="enchTitle" tabindex="-1">
+      <div class="pane-heading"><h2 id="enchTitle"><span class="step">03</span> Enchantments</h2><span id="slotCount" class="count"></span></div>
+      <div id="selectedItem" class="selected-item" hidden></div>
       <div id="enchBody"></div>
-      <div id="enchEmpty" class="empty">
-        <strong>Choose an item</strong>
-        Edit its decoration, engraving, and inscription slots here.
+      <div id="enchEmpty" class="welcome">
+        <div class="welcome-art" aria-hidden="true"><img src="/icons/110001" alt="" width="72" height="72"><img src="/icons/120001" alt="" width="72" height="72"><img src="/icons/130001" alt="" width="72" height="72"></div>
+        <h3>A better roll starts here.</h3><p>Load a save and choose an equipped item to edit its decorations, engravings, and inscriptions.</p>
+        <div class="welcome-note"><strong>Your file stays local.</strong><span>Changes are staged until you review and save. A backup is created when you write.</span></div>
       </div>
+      <details id="advanced" class="advanced" hidden><summary>Advanced editing</summary><label class="checkbox-row"><input id="cbCustom" name="custom" type="checkbox"><span>Custom values</span></label><p>Allow values outside the game tables. Custom rolls may be rejected by the game.</p></details>
     </section>
   </main>
-
-  <footer class="statusbar">
-    <span class="pill clean" id="dirtyPill"><span class="dot"></span><span id="dirtyText">Saved</span></span>
-    <span class="path" id="statusPath" title="">No save loaded</span>
-    <span class="sep">·</span>
-    <span class="backend" id="backendBadge">AES: —</span>
-    <span class="spacer"></span>
-    <span>Close the game before saving</span>
-  </footer>
-
-  <div id="toast" class="toast"></div>
-  <script src="/app.js"></script>
+  <footer class="app-footer"><span id="statusPath">Waiting for a save</span><span>Close the game before saving.</span></footer>
+  <dialog id="confirmDialog" aria-labelledby="dialogTitle" aria-describedby="dialogDescription">
+    <div class="dialog-top"><span id="dialogEyebrow">Save changes</span><button id="dialogClose" type="button" class="quiet" aria-label="Close dialog">Close</button></div>
+    <h2 id="dialogTitle">Review your changes</h2><p id="dialogDescription"></p>
+    <div id="dialogBody"></div>
+    <div class="dialog-actions"><button id="dialogCancel" type="button" class="secondary">Keep editing</button><button id="dialogAccept" type="button" class="primary">Save with backup</button></div>
+  </dialog>
+  <noscript><p class="notice">Enable JavaScript to load and edit a save. No data has been changed.</p></noscript>
 </body>
 </html>

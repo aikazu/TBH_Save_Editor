@@ -23,6 +23,8 @@ ICONS = os.path.join(DATA, "icons")
 PORT = 8765
 
 GD = gamedata.GameData(DATA)
+with open(os.path.join(DATA, "version.json"), encoding="utf-8") as version_file:
+    DATA_VERSION = json.load(version_file)
 # UI-facing slot labels. DEPENDS on core/gamedata.SLOT_MATERIAL_TYPE order.
 SLOT_LABELS = ["Decoration", "Decoration", "Engraving", "Engraving", "Inscription", "Inscription"]
 
@@ -42,7 +44,9 @@ def default_save_path():
 def item_payload(it):
     ikey = it["ItemKey"]
     enchants = []
-    for i, ed in enumerate(it.get("EnchantData", [])[:6]):
+    slots = it.get("EnchantData", [])
+    for i in range(6):
+        ed = slots[i] if i < len(slots) else GD.empty_enchant()
         filled = ed.get("MaterialKey", 0) != 0
         e = {"slot": i, "type": GD.slot_material_type(i), "label": SLOT_LABELS[i],
              "filled": filled, "allowed": GD.slot_allowed(ikey, i)}
@@ -59,8 +63,11 @@ def item_payload(it):
                 "tier": ed.get("Tier"),
                 "value": GD.to_display(ed.get("Value", 0), stt, mtp),
                 "isPercent": is_pct,
-                "stat": GD.pretty_stat(si["STATTYPE"]) + (" %" if is_pct else "") if si else "?",
+                "stat": GD.pretty_stat(stt) if si else "Unknown stat",
+                "statType": stt,
+                "modType": mtp,
                 "errors": GD.validate_enchant(i, ikey, ed),
+                "identityValid": not GD.validate_enchant(i, ikey, ed, check_value=False),
             })
         enchants.append(e)
     return {
@@ -89,7 +96,9 @@ def heroes_payload():
         out.append({"heroKey": h.get("heroKey"), "level": h.get("HeroLevel"),
                     "name": GD.hero_name(h.get("heroKey")),
                     "klass": GD.hero_class(h.get("heroKey")), "items": slots})
-    return {"heroes": out, "path": State.path}
+    return {"heroes": out, "path": State.path,
+            "saveVersion": sf.account.get("version", "unknown"),
+            "dataVersion": DATA_VERSION.get("gameVersion", "unknown")}
 
 
 def find_item(uid):
@@ -137,15 +146,22 @@ class Handler(http.server.BaseHTTPRequestHandler):
             return self._file(os.path.join(ICONS, "%s.png" % key), "image/png")
         if p == "/api/state":
             return self._send(200, {"loaded": State.save is not None, "path": State.path or default_save_path(),
-                                    "aesBackend": es3.AES_BACKEND})
+                                    "aesBackend": es3.AES_BACKEND,
+                                    "saveVersion": State.save.account.get("version", "unknown") if State.save else None,
+                                    "dataVersion": DATA_VERSION.get("gameVersion", "unknown")})
         if p == "/api/heroes":
             if not State.save:
                 return self._send(400, {"error": "No save loaded"})
             return self._send(200, heroes_payload())
         if p == "/api/stat_first":
             # Stat-first editor: merges tiers across all materials of the slot's type.
-            item_key = int(q["item"][0])
-            slot = int(q.get("slot", ["0"])[0])
+            try:
+                item_key = int(q["item"][0])
+                slot = int(q.get("slot", ["0"])[0])
+                if slot not in range(6):
+                    raise ValueError("Slot must be between 0 and 5")
+            except (KeyError, ValueError) as e:
+                return self._send(400, {"error": str(e)})
             gg = GD.gear_group(item_key)
             return self._send(200, {"slot": slot, "gearGroup": gg,
                                    "options": GD.stat_first_options(slot, gg)})
@@ -155,7 +171,12 @@ class Handler(http.server.BaseHTTPRequestHandler):
     def do_POST(self):
         u = urllib.parse.urlparse(self.path)
         length = int(self.headers.get("Content-Length", 0))
-        body = json.loads(self.rfile.read(length) or b"{}")
+        try:
+            body = json.loads(self.rfile.read(length) or b"{}")
+            if not isinstance(body, dict):
+                raise ValueError("Expected a JSON object")
+        except (ValueError, UnicodeDecodeError) as e:
+            return self._send(400, {"error": str(e)})
         p = u.path
         if p == "/api/load":
             path = body.get("path") or default_save_path()
@@ -166,14 +187,21 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 return self._send(400, {"error": "Failed to load: %s" % e})
             return self._send(200, heroes_payload())
         if p == "/api/set_enchant":
-            it = find_item(body["uniqueId"])
+            if not State.save:
+                return self._send(400, {"error": "Load a save first"})
+            it = find_item(body.get("uniqueId"))
             if not it:
                 return self._send(404, {"error": "Item not found"})
-            slot = int(body["slot"])
-            while len(it.get("EnchantData", [])) <= slot:
-                it.setdefault("EnchantData", []).append(GD.empty_enchant())
+            try:
+                slot = int(body["slot"])
+                if slot not in range(6):
+                    raise ValueError("Slot must be between 0 and 5")
+            except (KeyError, ValueError, TypeError) as e:
+                return self._send(400, {"error": str(e)})
             if body.get("clear"):
-                it["EnchantData"][slot] = GD.empty_enchant()
+                if slot >= len(it.get("EnchantData", [])):
+                    return self._send(200, item_payload(it))
+                it["EnchantData"][slot] = {**it["EnchantData"][slot], **GD.empty_enchant()}
                 GD.recount_enchants(it)  # keep EnchantCount consistent
                 return self._send(200, item_payload(it))
             if not GD.slot_allowed(it["ItemKey"], slot):
@@ -185,17 +213,21 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 si = GD.statmod.get((str(statmodkey), str(tier)))
                 mtp = si["MODTYPE"] if si else "FLAT"
                 stt = si["STATTYPE"] if si else ""
-                raw_value = GD.to_raw(int(body["value"]), stt, mtp)
+                raw_value = GD.to_raw(body["value"], stt, mtp)
                 ed = GD.build_enchant(slot, int(body["materialKey"]), statmodkey, tier, raw_value)
             except Exception as e:
                 return self._send(400, {"error": str(e)})
-            # Custom Edit mode: skip game-table validation so the user can force
-            # any value. The enchant is still built via build_enchant (consistent
-            # struct) and EnchantCount is still recounted so the effect activates.
-            if not body.get("force"):
-                errs = GD.validate_enchant(slot, it["ItemKey"], ed)
-                if errs:
-                    return self._send(400, {"error": "; ".join(errs)})
+            # Custom values skip range/step checks, but still require a valid
+            # material/stat/tier combination for this slot and item.
+            errs = GD.validate_enchant(slot, it["ItemKey"], ed, check_value=not body.get("force"))
+            if errs:
+                return self._send(400, {"error": "; ".join(errs)})
+            while len(it.get("EnchantData", [])) <= slot:
+                it.setdefault("EnchantData", []).append(GD.empty_enchant())
+            # Preserve fields added by newer saves, including EnchantVersion.
+            ed = {**it["EnchantData"][slot], **ed}
+            if it["EnchantData"][slot] == ed:
+                return self._send(200, item_payload(it))
             it["EnchantData"][slot] = ed
             GD.bump_applied(it, slot)     # +1 to the type's AppliedTotalCount
             GD.recount_enchants(it)       # EnchantCount = active slots per type (ACTIVATES the effect in-game)

@@ -1,433 +1,393 @@
 "use strict";
-const $ = (s, r = document) => r.querySelector(s);
-const el = (t, c, h) => {
-  const e = document.createElement(t);
-  if (c) e.className = c;
-  if (h != null) e.innerHTML = h;
-  return e;
+const $ = (selector, root = document) => root.querySelector(selector);
+const el = (tag, className, text) => {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text != null) node.textContent = text;
+  return node;
 };
+const STATE = { heroes: [], hero: null, item: null, loaded: false, busy: false, path: "", changes: new Map(), editorToken: 0 };
+const format = (value) => Number(value).toLocaleString("en-US", { maximumFractionDigits: 8 });
+const titleCase = (value) => value ? value[0] + value.slice(1).toLowerCase() : "Unknown";
+const changeKey = (uid, slot) => `${uid}:${slot}`;
 
-// ---------------------------------------------------------------- UI state
-const STATE = { heroes: [], hero: null, item: null, dirtyCount: 0, loaded: false };
-
-// ---------------------------------------------------------------- helpers
 async function api(method, path, body) {
-  const r = await fetch(path, {
-    method,
-    headers: { "Content-Type": "application/json" },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-  const data = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(data.error || "HTTP " + r.status);
+  let response;
+  try {
+    response = await fetch(path, { method, headers: { "Content-Type": "application/json" }, body: body === undefined ? undefined : JSON.stringify(body) });
+  } catch {
+    throw new Error("The editor server is unavailable. Start server.py and try again.");
+  }
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error || `Request failed (${response.status}).`);
   return data;
 }
-
-function toast(msg, kind = "") {
-  const t = $("#toast");
-  t.textContent = msg;
-  t.className = "toast show " + kind;
-  setTimeout(() => (t.className = "toast"), 2800);
+function notice(message, kind = "") {
+  const node = $("#notice");
+  node.textContent = message;
+  node.className = `notice ${kind}`;
+  node.hidden = !message;
 }
-
-function iconEl(url, fallback) {
-  if (url) {
-    const i = el("img");
-    i.src = url;
-    i.alt = "";
-    return i;
-  }
-  return el("div", "ico", fallback || "?");
+function renderStatus() {
+  const count = STATE.changes.size;
+  $("#dirtyText").textContent = count ? `${count} unsaved ${count === 1 ? "slot" : "slots"}` : STATE.loaded ? "All changes saved" : "No save loaded";
+  $("#dirtyText").className = count ? "dirty" : "";
+  $("#btnSave").disabled = !count || STATE.busy;
+  $("#btnSave").textContent = count ? `Review & save (${count})` : "Review & save";
 }
-
-// middle-truncate a long path for the status strip
-function truncMiddle(s, max = 48) {
-  if (!s || s.length <= max) return s || "";
-  const head = Math.ceil((max - 1) / 2);
-  const tail = Math.floor((max - 1) / 2);
-  return s.slice(0, head) + "…" + s.slice(s.length - tail);
-}
-
-// grade badge class: COMMON -> r-COMMON (CSS rarity color ladder)
-function gradeClass(grade) {
-  return grade ? "grade r-" + grade.toUpperCase() : "grade";
-}
-
-// run an async action with a button "loading" state (also blocks double-clicks)
-async function withBusy(btn, fn) {
-  if (!btn || btn.disabled) return;
-  const label = btn.textContent;
-  btn.disabled = true;
-  btn.textContent = "Working…";
-  try {
-    return await fn();
-  } finally {
-    btn.disabled = false;
-    btn.textContent = label;
+async function busy(button, label, work) {
+  if (STATE.busy) return;
+  const previous = button?.textContent;
+  STATE.busy = true;
+  $("#workbench").inert = true;
+  $("#savePath").disabled = true;
+  $("#btnLoad").disabled = true;
+  if (button) { button.disabled = true; button.textContent = label; }
+  renderStatus();
+  try { return await work(); }
+  finally {
+    STATE.busy = false;
+    $("#workbench").inert = false;
+    $("#savePath").disabled = false;
+    $("#btnLoad").disabled = false;
+    if (button?.isConnected) { button.disabled = false; button.textContent = previous; }
+    renderStatus();
   }
 }
+function confirmAction({ title, description, accept, cancel = "Cancel", eyebrow = "Confirm action", body }) {
+  const dialog = $("#confirmDialog");
+  $("#dialogTitle").textContent = title;
+  $("#dialogDescription").textContent = description;
+  $("#dialogEyebrow").textContent = eyebrow;
+  $("#dialogAccept").textContent = accept;
+  $("#dialogCancel").textContent = cancel;
+  $("#dialogBody").replaceChildren();
+  if (body) $("#dialogBody").append(body);
+  dialog.returnValue = "";
+  return new Promise((resolve) => {
+    dialog.onclose = () => resolve(dialog.returnValue === "accept");
+    dialog.showModal();
+    $("#dialogCancel").focus();
+  });
+}
+$("#dialogAccept").onclick = () => $("#confirmDialog").close("accept");
+$("#dialogCancel").onclick = $("#dialogClose").onclick = () => $("#confirmDialog").close("cancel");
 
-// ----------------------------------------------------- dirty-state tracking
-function setDirty(delta) {
-  STATE.dirtyCount = Math.max(0, STATE.dirtyCount + delta);
-  renderDirty();
+function icon(url, className = "item-icon") {
+  if (!url) return el("span", "slot-number", "?");
+  const image = el("img", className);
+  image.src = url;
+  image.alt = "";
+  image.width = image.height = className === "material-icon" ? 36 : 48;
+  return image;
 }
-function clearDirty() {
-  STATE.dirtyCount = 0;
-  renderDirty();
+function grade(item) { return el("span", `grade grade-${item.grade || "COMMON"}`, titleCase(item.grade)); }
+function closeEditor() {
+  STATE.editorToken += 1;
+  $(".editor")?.remove();
+  document.querySelectorAll("[data-edit-slot]").forEach((button) => button.setAttribute("aria-expanded", "false"));
 }
-function renderDirty() {
-  const pill = $("#dirtyPill");
-  const txt = $("#dirtyText");
-  if (STATE.dirtyCount > 0) {
-    pill.className = "pill dirty";
-    txt.textContent = "Unsaved · " + STATE.dirtyCount;
-  } else {
-    pill.className = "pill clean";
-    txt.textContent = STATE.loaded ? "Saved" : "Ready";
-  }
+function empty(node, heading, text) {
+  node.replaceChildren(el("strong", "", heading), el("p", "", text));
+  node.hidden = false;
 }
 
-// ----------------------------------------------------------- load / save
-async function boot() {
-  const st = await api("GET", "/api/state");
-  $("#savePath").value = st.path || "";
-  $("#backendBadge").textContent = "AES: " + (st.aesBackend || "—");
-  $("#statusPath").textContent = st.path ? truncMiddle(st.path) : "No save loaded";
-  $("#statusPath").title = st.path || "";
-  renderDirty();
-}
-
-async function doLoad() {
-  await withBusy($("#btnLoad"), async () => {
+async function loadSave() {
+  if (STATE.busy) return;
+  if (STATE.changes.size && !await confirmAction({ title: "Discard staged changes?", description: "Loading a save replaces the unsaved changes in this workbench. Your file has not been changed.", accept: "Discard & load", cancel: "Keep editing" })) return;
+  await busy($("#btnLoad"), "Loading…", async () => {
+    notice("Reading and decrypting your save…");
     try {
-      const data = await api("POST", "/api/load", {
-        path: $("#savePath").value.trim(),
-      });
-      applyHeroes(data);
-      $("#btnSave").disabled = false;
+      const data = await api("POST", "/api/load", { path: $("#savePath").value.trim() });
+      closeEditor();
+      STATE.heroes = data.heroes;
+      STATE.path = data.path;
       STATE.loaded = true;
-      clearDirty();
-      toast(`Loaded · ${data.heroes.length} heroes`, "ok");
-    } catch (e) {
-      toast("Failed to load: " + e.message, "err");
-    }
+      STATE.changes.clear();
+      STATE.hero = data.heroes.findIndex((hero) => hero.items.length);
+      if (STATE.hero < 0) STATE.hero = data.heroes.length ? 0 : null;
+      STATE.item = STATE.heroes[STATE.hero]?.items[0] || null;
+      $("#itemSearch").value = "";
+      $("#savePath").value = data.path;
+      $("#statusPath").textContent = data.path;
+      $("#versionLabel").textContent = `Tables ${data.dataVersion} · Save ${data.saveVersion}`;
+      $("#versionWarning").hidden = data.dataVersion === data.saveVersion;
+      $("#versionWarning").textContent = `This save is version ${data.saveVersion}; the editor tables are ${data.dataVersion}. Enchant options may differ.`;
+      renderHeroes(); renderItems(); renderEnchants();
+      notice(`Loaded ${data.heroes.length} heroes. Select equipment to begin.`, "success");
+    } catch (error) { notice(error.message, "error"); }
   });
 }
-
-async function doSave() {
-  if (STATE.dirtyCount === 0) {
-    toast("Nothing unsaved to write.", "");
-    return;
-  }
-  if (!confirm("Write changes to the save file? A .bak backup is created first.")) return;
-  await withBusy($("#btnSave"), async () => {
-    try {
-      const r = await api("POST", "/api/save", {});
-      const fix = r.fixed ? ` · ${r.fixed} counter(s) repaired` : "";
-      toast("Saved to game" + fix + " · backup created", "ok");
-      clearDirty();
-    } catch (e) {
-      toast("Failed to save: " + e.message, "err");
-    }
-  });
-}
-
-function applyHeroes(data) {
-  STATE.heroes = data.heroes;
-  STATE.hero = null;
-  STATE.item = null;
-  renderHeroes();
-  $("#itemGrid").innerHTML = "";
-  $("#itemEmpty").style.display = "block";
-  $("#itemEmpty").innerHTML = "<strong>Pick a hero</strong>Their equipped items will appear here.";
-  $("#enchBody").innerHTML = "";
-  $("#enchEmpty").style.display = "block";
-  $("#enchTitle").textContent = "Enchantments";
-  $("#heroEmpty").style.display = STATE.heroes.length ? "none" : "block";
-}
-
-// ----------------------------------------------------------------- heroes
 function renderHeroes() {
   const list = $("#heroList");
-  list.innerHTML = "";
-  STATE.heroes.forEach((h, idx) => {
-    const d = el("div", "hero" + (STATE.hero === idx ? " sel" : ""));
-    d.append(
-      el("span", "nm", h.name || "Hero " + h.heroKey),
-      el("span", "lv", "Lv " + h.level)
-    );
-    d.onclick = () => selectHero(idx);
-    list.append(d);
+  list.replaceChildren();
+  $("#heroEmpty").hidden = STATE.heroes.length > 0;
+  if (STATE.loaded && !STATE.heroes.length) $("#heroEmpty").textContent = "This save has no heroes yet.";
+  $("#heroCount").textContent = STATE.loaded ? STATE.heroes.length : "";
+  STATE.heroes.forEach((hero, index) => {
+    const button = el("button", "hero-button");
+    button.type = "button";
+    button.setAttribute("aria-pressed", String(STATE.hero === index));
+    const copy = el("span");
+    copy.append(el("strong", "", hero.name), el("small", "", `Level ${hero.level}`));
+    button.append(copy, el("span", "hero-index", `${hero.items.length} gear`));
+    button.onclick = () => {
+      if (STATE.busy) return;
+      closeEditor(); STATE.hero = index; STATE.item = hero.items[0] || null;
+      $("#itemSearch").value = "";
+      renderHeroes(); renderItems(); renderEnchants();
+      $(`#heroList button:nth-child(${index + 1})`)?.focus({ preventScroll: true });
+    };
+    list.append(button);
   });
 }
-
-function selectHero(idx) {
-  STATE.hero = idx;
-  STATE.item = null;
-  renderHeroes();
-  renderItems();
-  $("#enchBody").innerHTML = "";
-  $("#enchEmpty").style.display = "block";
-  $("#enchTitle").textContent = "Enchantments";
-}
-
-// ------------------------------------------------------------------ items
 function renderItems() {
-  const grid = $("#itemGrid");
-  grid.innerHTML = "";
-  const h = STATE.heroes[STATE.hero];
-  $("#itemEmpty").style.display = h.items.length ? "none" : "block";
-  h.items.forEach((it) => {
-    const c = el("div", "card" + (STATE.item && STATE.item.uniqueId === it.uniqueId ? " sel" : ""));
-    c.append(iconEl(it.icon, it.group || "?"));
-    c.append(el("div", "nm", it.name));
-    if (it.grade) c.append(el("div", gradeClass(it.grade), it.grade));
-    else c.append(el("div", "grp", it.group || ""));
-    c.onclick = () => selectItem(it);
-    grid.append(c);
+  const list = $("#itemGrid");
+  list.replaceChildren();
+  const hero = STATE.heroes[STATE.hero];
+  $("#heroSummary").hidden = !hero;
+  $("#itemTools").hidden = !hero?.items.length;
+  $("#itemCount").textContent = hero ? hero.items.length : "";
+  if (!hero) return empty($("#itemEmpty"), "Choose your hero", "Their equipped items will appear here.");
+  $("#heroSummary").replaceChildren(document.createTextNode(hero.name), el("span", "", `Level ${hero.level} · ${hero.items.length} equipped items`));
+  if (!hero.items.length) return empty($("#itemEmpty"), "No equipment yet", `${hero.name} has no equipped items in this save. Choose another hero.`);
+  const query = $("#itemSearch").value.trim().toLowerCase();
+  const items = hero.items.filter((item) => `${item.name} ${item.grade} ${item.group}`.toLowerCase().includes(query));
+  $("#itemEmpty").hidden = items.length > 0;
+  if (!items.length) empty($("#itemEmpty"), "No matching equipment", "Try a different name or rarity.");
+  items.forEach((item) => {
+    const button = el("button", "item-button");
+    button.type = "button"; button.dataset.item = item.uniqueId;
+    button.setAttribute("aria-pressed", String(STATE.item?.uniqueId === item.uniqueId));
+    const copy = el("span", "item-copy");
+    copy.append(el("span", "item-name", item.name));
+    const meta = el("span", "item-meta"); meta.append(grade(item), el("span", "", titleCase(item.group)));
+    copy.append(meta);
+    if ([...STATE.changes.values()].some((change) => change.uid === item.uniqueId)) copy.append(el("span", "edited-label", "Edited"));
+    button.append(icon(item.icon), copy);
+    button.onclick = () => {
+      if (STATE.busy) return;
+      closeEditor(); STATE.item = item; renderItems(); renderEnchants();
+      [...list.children].find((child) => child.dataset.item === item.uniqueId)?.focus({ preventScroll: true });
+      if (matchMedia("(max-width: 649px)").matches) $("#enchPane").scrollIntoView({ block: "start", behavior: "instant" });
+    };
+    list.append(button);
   });
 }
-
-function selectItem(it) {
-  STATE.item = it;
-  renderItems();
-  renderEnchants();
-}
-
-// ------------------------------------------------------------- enchantments
 function renderEnchants() {
-  const it = STATE.item;
-  const body = $("#enchBody");
-  $("#enchEmpty").style.display = "none";
-  $("#enchTitle").textContent =
-    it.name + (it.grade ? "  ·  " + it.grade : "") + (it.group ? "  ·  " + it.group : "");
-  body.innerHTML = "";
-  it.enchants.forEach((e) => body.append(slotCard(e)));
+  closeEditor();
+  const item = STATE.item;
+  $("#enchBody").replaceChildren();
+  $("#enchEmpty").hidden = !!item;
+  $("#selectedItem").hidden = !item;
+  $("#advanced").hidden = !item;
+  $("#slotCount").textContent = item ? `${item.enchants.filter((slot) => slot.allowed && slot.filled).length} / ${item.enchants.filter((slot) => slot.allowed).length} filled` : "";
+  if (!item) return;
+  const detail = el("div");
+  detail.append(el("span", "selected-caption", `${STATE.heroes[STATE.hero].name}'s equipment`), el("h3", "", item.name));
+  const meta = el("div", "item-meta"); meta.append(grade(item), el("span", "", `· ${titleCase(item.group)}`)); detail.append(meta);
+  $("#selectedItem").replaceChildren(icon(item.icon), detail);
+  ["Decoration", "Engraving", "Inscription"].forEach((label, groupIndex) => {
+    const section = el("section", "enchant-group");
+    const slots = item.enchants.slice(groupIndex * 2, groupIndex * 2 + 2);
+    const head = el("div", "group-heading");
+    head.append(el("h3", "", label), el("span", "", `${slots.filter((slot) => slot.allowed).length} available`));
+    section.append(head);
+    slots.forEach((slot) => section.append(slotRow(slot)));
+    $("#enchBody").append(section);
+  });
+}
+function slotRow(slot) {
+  const changed = STATE.changes.has(changeKey(STATE.item.uniqueId, slot.slot));
+  const row = el("div", `slot${slot.allowed ? "" : " locked"}${changed ? " changed" : ""}`);
+  row.dataset.slot = slot.slot;
+  const summary = el("div", "slot-summary");
+  summary.append(slot.filled ? icon(slot.materialIcon, "material-icon") : el("span", "slot-number", slot.allowed ? String(slot.slot % 2 + 1) : "–"));
+  const copy = el("div", "slot-copy");
+  copy.append(el("div", "slot-stat", slot.filled ? slot.stat : slot.allowed ? "Empty slot" : "Locked slot"));
+  copy.append(el("span", "slot-detail", slot.filled ? `${slot.materialName} · Tier ${slot.tier}` : slot.allowed ? "Choose a stat to add an enchant." : `Unavailable for ${titleCase(STATE.item.grade)} gear.`));
+  summary.append(copy);
+  if (slot.filled) summary.append(el("span", "slot-value", `${format(slot.value)}${slot.isPercent ? "%" : ""}`));
+  row.append(summary);
+  if (slot.errors?.length) row.append(el("div", "slot-error", slot.errors.join(". ")));
+  if (changed) row.append(el("span", "edited-label", "Staged change"));
+  if (slot.allowed || slot.filled) {
+    const actions = el("div", "slot-actions");
+    if (slot.allowed) {
+      const edit = el("button", "secondary", slot.filled ? "Edit" : "Add");
+      edit.type = "button"; edit.dataset.editSlot = slot.slot;
+      edit.setAttribute("aria-label", `${slot.filled ? "Edit" : "Add"} ${slot.label.toLowerCase()} ${slot.slot % 2 + 1}`);
+      edit.setAttribute("aria-expanded", "false"); edit.setAttribute("aria-controls", `editor-${slot.slot}`);
+      edit.onclick = () => openEditor(row, slot, edit);
+      actions.append(edit);
+    }
+    if (slot.filled) {
+      const clear = el("button", "quiet", "Clear");
+      clear.type = "button"; clear.setAttribute("aria-label", `Clear ${slot.label.toLowerCase()} ${slot.slot % 2 + 1}`);
+      clear.onclick = async () => {
+        if (STATE.busy) return;
+        if (await confirmAction({ title: `Clear this ${slot.label.toLowerCase()}?`, description: `${STATE.item.name}: ${describeSlot(slot)}. This change will be staged until you save.`, accept: "Clear enchant", cancel: "Keep enchant" })) {
+          await setEnchant({ uniqueId: STATE.item.uniqueId, slot: slot.slot, clear: true }, clear);
+        }
+      };
+      actions.append(clear);
+    }
+    row.append(actions);
+  }
+  return row;
 }
 
-function slotCard(e) {
-  const s = el("div", "slot" + (e.allowed ? "" : " locked"));
-  s.dataset.type = e.type;
-  const head = el("div", "head");
-  head.append(el("span", "tag " + e.type, e.label));
-  const cur = el("div", "cur");
-  if (!e.allowed) {
-    cur.innerHTML = `<i>Unavailable — this item's grade has no such slot.</i>`;
-  } else if (e.filled) {
-    const unit = e.isPercent ? "%" : "";
-    cur.innerHTML =
-      `<b>${e.materialName}</b> — <span class="stat">${e.stat}</span> ` +
-      `<span class="tier">T${e.tier}</span> · <span class="v">${e.value}${unit}</span>`;
-    if (e.errors && e.errors.length) cur.append(el("div", "err", "⚠ " + e.errors.join("; ")));
-  } else {
-    cur.innerHTML = `<i>Empty</i>`;
-  }
-  head.append(cur);
-  s.append(head);
-
-  if (e.allowed) {
-    const actions = el("div", "actions");
-    const edit = el("button", "", e.filled ? "Edit" : "Add");
-    edit.onclick = () => openEditor(s, e);
-    actions.append(edit);
-    if (e.filled) {
-      const clr = el("button", "linkbtn", "Clear");
-      clr.onclick = () => setEnchant({ uniqueId: STATE.item.uniqueId, slot: e.slot, clear: true });
-      actions.append(clr);
-    }
-    s.append(actions);
-  }
-  return s;
-}
-
-// inline editor for one slot — stat-first (material auto-resolved server-side)
-async function openEditor(slotEl, e) {
-  slotEl.querySelectorAll(".editor").forEach((x) => x.remove());
-  const box = el("div", "editor");
-
-  const onKey = (ev) => {
-    if (ev.key === "Escape") {
-      close();
-    }
-  };
-  const close = () => {
-    document.removeEventListener("keydown", onKey);
-    box.remove();
-  };
-  document.addEventListener("keydown", onKey);
-
-  // fetch the stat-first options once: every stat, every tier (union across materials)
-  let options = [];
+async function openEditor(row, current, trigger) {
+  if (STATE.busy) return;
+  closeEditor();
+  const token = STATE.editorToken;
+  const item = STATE.item;
+  trigger.setAttribute("aria-expanded", "true");
+  const form = el("form", "editor"); form.id = `editor-${current.slot}`; form.method = "post"; form.action = "/api/set_enchant";
+  form.append(el("p", "range-hint", "Loading available stats…")); row.append(form);
+  let options;
   try {
-    const data = await api("GET", `/api/stat_first?item=${STATE.item.itemKey}&slot=${e.slot}`);
-    options = data.options;
-  } catch (err) {
-    box.append(el("div", "err", "Failed to load options: " + err.message));
-    slotEl.append(box);
+    options = (await api("GET", `/api/stat_first?item=${item.itemKey}&slot=${current.slot}`)).options;
+  } catch (error) {
+    if (token === STATE.editorToken) { form.replaceChildren(el("p", "field-error", error.message)); const retry = el("button", "secondary", "Retry"); retry.type = "button"; retry.onclick = () => openEditor(row, current, trigger); form.append(retry); }
     return;
   }
-
-  // 1) Stat
-  const rowStat = el("div", "row", `<label>Stat</label>`);
-  const selStat = el("select");
-  selStat.append(new Option("— choose —", ""));
-  options.forEach((o, i) => selStat.append(new Option(o.statName, i)));
-  rowStat.append(selStat);
-  // 2) Tier (union of all tiers across materials for the chosen stat)
-  const rowTier = el("div", "row", `<label>Tier</label>`);
-  const selTier = el("select");
-  rowTier.append(selTier);
-  // 3) Value (defaults to MAX; material is carried silently from the chosen tier)
-  // In Custom Edit mode the slider + Max button are hidden and the number field
-  // is unbounded (no min/max/step) so any value can be forced into the slot.
-  const isCustom = $("#cbCustom").checked;
-  const rowVal = el("div", "row");
-  rowVal.append(el("label", null, "Value"));
-  const valWrap = el("div", "valbox" + (isCustom ? " custom" : ""));
-  const rng = el("input");
-  rng.type = "range";
-  const num = el("input", "num");
-  num.type = "number";
-  const maxBtn = el("button", "", "Max");
-  if (isCustom) {
-    valWrap.append(num);
-  } else {
-    valWrap.append(rng, num, maxBtn);
-  }
-  rowVal.append(valWrap);
-  const hint = el("div", "hint");
-  box.append(rowStat, rowTier, rowVal, hint);
-
-  if (!options.length) {
-    selStat.disabled = true;
-    hint.textContent = "This slot grants no stats for this gear type.";
-  }
-
-  // pre-select the slot's current stat/tier when editing a filled slot
-  if (e.filled) {
-    const k = options.findIndex((o) => o.statModKey === e.statModKey);
-    if (k >= 0) selStat.value = String(k);
-  }
-
-  function onStat() {
-    selTier.innerHTML = "";
-    const o = options[selStat.value];
-    if (!o) {
-      hint.textContent = "";
-      return;
+  if (token !== STATE.editorToken || !form.isConnected) return;
+  form.replaceChildren();
+  const custom = $("#cbCustom").checked;
+  const heading = el("div", "editor-heading"); heading.append(el("strong", "", `${current.label} ${current.slot % 2 + 1}`), el("span", `editor-mode${custom ? " custom" : ""}`, custom ? "Custom values" : "Game-table values"));
+  const fields = el("div", "form-fields");
+  const stat = el("select"); stat.id = "editStat"; stat.name = "stat"; stat.required = true;
+  stat.append(new Option("Choose a stat", "")); options.forEach((option, index) => stat.append(new Option(option.statName, String(index))));
+  const tier = el("select"); tier.id = "editTier"; tier.name = "tier"; tier.required = true;
+  const number = el("input"); number.type = "number"; number.inputMode = "decimal"; number.id = "editValue"; number.name = "value"; number.required = true;
+  const range = el("input"); range.type = "range"; range.id = "editRange"; range.setAttribute("aria-label", "Enchantment value slider");
+  const max = el("button", "secondary", "Max"); max.type = "button";
+  const hint = el("p", "range-hint"); hint.id = "rangeHint";
+  const error = el("p", "field-error"); error.id = "editError"; error.setAttribute("role", "alert");
+  number.setAttribute("aria-describedby", "rangeHint editError");
+  const field = (text, input, className = "") => { const wrap = el("div", className); const label = el("label", "", text); label.htmlFor = input.id; wrap.append(label, input); return wrap; };
+  fields.append(field("Stat", stat), field("Tier", tier));
+  const valueField = el("div", "field-value"); const valueLabel = el("label", "", "Value"); valueLabel.htmlFor = number.id;
+  const valueControls = el("div", "value-controls");
+  if (!custom) valueControls.append(range);
+  valueControls.append(number);
+  if (!custom) valueControls.append(max);
+  valueField.append(valueLabel, valueControls); fields.append(valueField);
+  const actions = el("div", "editor-actions"); const cancel = el("button", "quiet", "Cancel"); cancel.type = "button";
+  const apply = el("button", "primary", "Apply enchant"); apply.type = "submit";
+  actions.append(cancel, apply); form.append(heading, fields, hint, error, actions);
+  const currentIndex = options.findIndex((option) => option.tiers.some((candidate) => candidate.statModKey === current.statModKey));
+  const selection = () => { const option = options[stat.value]; return { option, chosen: option?.tiers.find((candidate) => String(candidate.tier) === tier.value) }; };
+  function updateTier(keepCurrent = false) {
+    const { option, chosen } = selection();
+    const active = !!chosen;
+    number.disabled = range.disabled = max.disabled = !active;
+    error.textContent = "";
+    if (!active) { number.value = ""; hint.textContent = "Choose a stat to see its available tiers and values."; return; }
+    const suffix = option.isPercent ? "%" : "";
+    valueLabel.textContent = option.isPercent ? "Value (%)" : "Value";
+    if (custom) { number.removeAttribute("min"); number.removeAttribute("max"); number.step = "any"; }
+    else {
+      number.min = range.min = chosen.min; number.max = range.max = chosen.max; number.step = range.step = chosen.interval || "any";
     }
-    o.tiers.forEach((t) => selTier.append(new Option("Tier " + t.tier, t.tier)));
-    // Editing a filled slot: keep its current tier when still valid.
-    // Picking a new stat: auto-select the HIGHEST tier (bottom of the list).
-    const keepTier = e.filled && String(e.tier) !== "" &&
-      o.tiers.some((t) => String(t.tier) === String(e.tier));
-    selTier.value = keepTier ? String(e.tier) : String(o.tiers[o.tiers.length - 1].tier);
-    onTier();
+    const value = keepCurrent && current.filled && chosen.statModKey === current.statModKey && chosen.tier === current.tier ? current.value : chosen.max;
+    number.value = range.value = value;
+    hint.textContent = `${custom ? "Outside-table values allowed. " : ""}Range ${format(chosen.min)}${suffix} to ${format(chosen.max)}${suffix} · step ${format(chosen.interval)}${suffix}`;
   }
-  function onTier() {
-    const o = options[selStat.value];
-    if (!o) return;
-    const t = o.tiers.find((x) => String(x.tier) === String(selTier.value)) || o.tiers[o.tiers.length - 1];
-    if (isCustom) {
-      // No bounds: leave the field free. Seed with the slot's current value when
-      // editing, otherwise the tier MAX as a sensible starting point.
-      num.min = num.max = num.step = "";
-      const v = e.filled ? e.value : t.max;
-      num.value = v;
-      const unit = o.isPercent ? "%" : "";
-      hint.textContent = `⚠ Custom mode — no validation. ${o.statName} · T${t.tier} · nominal range ${t.min}${unit}–${t.max}${unit}`;
-    } else {
-      rng.min = num.min = t.min;
-      rng.max = num.max = t.max;
-      rng.step = num.step = t.interval || 1;
-      // Editing a filled slot: keep its value when inside range; otherwise default to MAX.
-      const v = e.filled && e.value >= t.min && e.value <= t.max ? e.value : t.max;
-      rng.value = num.value = v;
-      const unit = o.isPercent ? "%" : "";
-      hint.textContent = `${o.statName} · T${t.tier} · range ${t.min}${unit}–${t.max}${unit} (step ${t.interval})`;
+  function updateStat(keepCurrent = false) {
+    tier.replaceChildren();
+    const option = options[stat.value];
+    tier.disabled = !option;
+    if (option) {
+      option.tiers.forEach((candidate) => tier.append(new Option(`Tier ${candidate.tier}`, String(candidate.tier))));
+      tier.value = String(keepCurrent && option.tiers.some((candidate) => candidate.tier === current.tier) ? current.tier : option.tiers.at(-1).tier);
     }
+    updateTier(keepCurrent);
   }
-  selStat.onchange = onStat;
-  selTier.onchange = onTier;
-  if (!isCustom) {
-    rng.oninput = () => (num.value = rng.value);
-    num.oninput = () => (rng.value = num.value);
-    maxBtn.onclick = () => {
-      num.value = rng.value = rng.max;
-    };
-  }
-
-  const apply = el("button", "primary", "Apply");
-  apply.onclick = () => {
-    const o = options[selStat.value];
-    if (!o) return toast("Choose a stat first.", "err");
-    const t = o.tiers.find((x) => String(x.tier) === String(selTier.value)) || o.tiers[o.tiers.length - 1];
-    setEnchant(
-      {
-        uniqueId: STATE.item.uniqueId,
-        slot: e.slot,
-        materialKey: t.materialKey,
-        statModKey: t.statModKey,
-        tier: +selTier.value,
-        value: +num.value,
-        force: isCustom,
-      },
-      close
-    );
+  stat.onchange = () => updateStat(); tier.onchange = () => updateTier();
+  number.oninput = () => { error.textContent = ""; if (number.value !== "") range.value = number.value; };
+  range.oninput = () => { number.value = range.value; error.textContent = ""; };
+  max.onclick = () => { number.value = range.value = selection().chosen.max; error.textContent = ""; };
+  cancel.onclick = () => { closeEditor(); trigger.focus(); };
+  form.addEventListener("keydown", (event) => { if (event.key === "Escape") { event.preventDefault(); closeEditor(); trigger.focus(); } });
+  form.onsubmit = async (event) => {
+    event.preventDefault(); if (STATE.busy || !form.reportValidity()) return;
+    const { chosen } = selection(); if (!chosen) return;
+    const preserveMaterial = current.filled && current.identityValid && chosen.statModKey === current.statModKey && chosen.tier === current.tier;
+    await setEnchant({ uniqueId: item.uniqueId, slot: current.slot, materialKey: preserveMaterial ? current.materialKey : chosen.materialKey, statModKey: chosen.statModKey, tier: chosen.tier, value: number.value, force: custom }, apply, error);
   };
-  const cancel = el("button", "linkbtn", "Cancel");
-  cancel.onclick = close;
-  const act = el("div", "actions");
-  act.append(apply, cancel);
-  box.append(act);
-
-  slotEl.append(box);
-  if (e.filled) onStat();
+  if (current.filled && currentIndex >= 0) stat.value = String(currentIndex);
+  updateStat(true);
+  if (!options.length) { stat.disabled = true; apply.disabled = true; hint.textContent = "No enchant options are available for this item."; }
+  stat.focus({ preventScroll: true });
 }
-
-async function setEnchant(payload, onDone) {
-  const wasClear = !!payload.clear;
-  try {
-    const item = await api("POST", "/api/set_enchant", payload);
-    const h = STATE.heroes[STATE.hero];
-    const idx = h.items.findIndex((x) => x.uniqueId === item.uniqueId);
-    if (idx >= 0) h.items[idx] = item;
-    STATE.item = item;
-    renderItems();
-    renderEnchants();
-    setDirty(1);
-    toast(wasClear ? "Slot cleared" : "Enchantment applied", "ok");
-    if (onDone) onDone();
-  } catch (e) {
-    toast("Error: " + e.message, "err");
-  }
-}
-
-// --------------------------------------------------------------- bindings
-$("#btnLoad").onclick = doLoad;
-$("#btnSave").onclick = doSave;
-$("#savePath").addEventListener("keydown", (e) => {
-  if (e.key === "Enter") doLoad();
-});
-// Custom Edit mode toggle: warn the user before bypassing game-table validation.
-$("#cbCustom").onchange = function () {
-  if (this.checked) {
-    const ok = confirm(
-      "⚠️ Custom Edit Mode\n\n" +
-      "This DISABLES game-table validation. Any value you enter will be " +
-      "written directly to the save (still using display scale).\n\n" +
-      "Slots edited while this mode is active may produce enchantments that " +
-      "are NOT legit according to the game — risk of rejection or ban is yours.\n\n" +
-      "Continue?"
-    );
-    if (!ok) {
-      this.checked = false;
-      this.closest(".custom-toggle").classList.remove("on");
-      return;
+async function setEnchant(payload, button, errorNode) {
+  const original = STATE.item.enchants[payload.slot];
+  const heroName = STATE.heroes[STATE.hero].name;
+  let applied = false;
+  await busy(button, "Applying…", async () => {
+    try {
+      const item = await api("POST", "/api/set_enchant", payload);
+      applied = true;
+      const updated = item.enchants[payload.slot];
+      if (JSON.stringify(original) === JSON.stringify(updated)) {
+        closeEditor(); notice("This enchant is unchanged."); return;
+      }
+      const key = changeKey(item.uniqueId, payload.slot);
+      STATE.changes.set(key, { uid: item.uniqueId, hero: heroName, itemName: item.name, label: `${updated.label} ${payload.slot % 2 + 1}`, before: STATE.changes.get(key)?.before || original, after: updated, custom: !!payload.force });
+      STATE.heroes.forEach((hero) => { hero.items = hero.items.map((entry) => entry.uniqueId === item.uniqueId ? item : entry); });
+      STATE.item = item; renderItems(); renderEnchants();
+      notice(payload.clear ? "Enchantment cleared. Review and save when ready." : "Enchantment staged. Review and save when ready.", "success");
+    } catch (error) {
+      if (errorNode) errorNode.textContent = error.message;
+      notice(error.message, "error");
     }
-    this.closest(".custom-toggle").classList.add("on");
-  } else {
-    this.closest(".custom-toggle").classList.remove("on");
-  }
+  });
+  if (applied) $(`[data-edit-slot="${payload.slot}"]`)?.focus({ preventScroll: true });
+  else if (errorNode) $("#editValue")?.focus({ preventScroll: true });
+}
+function describeSlot(slot) { return slot.filled ? `${slot.stat} · T${slot.tier} · ${format(slot.value)}${slot.isPercent ? "%" : ""} · ${slot.materialName}` : "Empty slot"; }
+async function reviewSave() {
+  if (STATE.busy || !STATE.changes.size) return;
+  const body = el("div");
+  STATE.changes.forEach((change) => {
+    const entry = el("div", "review-entry");
+    entry.append(el("h3", "", change.itemName), el("p", "", `${change.hero} · ${change.label}${change.custom ? " · Custom value" : ""}`));
+    const values = el("div", "review-values");
+    const before = el("div"); before.append(el("span", "", "Before"), document.createTextNode(describeSlot(change.before)));
+    const after = el("div", "review-after"); after.append(el("span", "", "After"), document.createTextNode(describeSlot(change.after)));
+    values.append(before, after); entry.append(values);
+    if (JSON.stringify(change.before) === JSON.stringify(change.after)) entry.append(el("p", "muted", "The roll is restored; its applied-enchant counter still records these edits."));
+    if (change.after.errors?.length) entry.append(el("p", "field-error", change.after.errors.join(". ")));
+    body.append(entry);
+  });
+  const path = el("div", "review-path"); path.append(el("strong", "", "Write to"), document.createTextNode(STATE.path)); body.append(path);
+  if (!await confirmAction({ title: "Review your changes", eyebrow: `${STATE.changes.size} staged ${STATE.changes.size === 1 ? "slot" : "slots"}`, description: "Close the game before saving. The current file will be backed up to .es3.bak before your changes are written.", accept: "Save with backup", cancel: "Keep editing", body })) return;
+  await busy($("#btnSave"), "Saving…", async () => {
+    notice("Writing your save and creating a backup…");
+    try {
+      const result = await api("POST", "/api/save", {});
+      STATE.changes.clear(); renderItems(); renderEnchants();
+      notice(`Saved. Backup: ${result.backup}${result.fixed ? ` · ${result.fixed} enchant counters repaired.` : ""}`, "success");
+    } catch (error) { notice(error.message, "error"); }
+  });
+}
+$("#loadForm").onsubmit = (event) => { event.preventDefault(); loadSave(); };
+$("#btnSave").onclick = reviewSave;
+$("#itemSearch").oninput = renderItems;
+$("#cbCustom").onchange = async (event) => {
+  const checkbox = event.target;
+  if (checkbox.checked) checkbox.checked = await confirmAction({ title: "Allow custom values?", description: "Custom values skip range validation. The game may reject these rolls. Your save is only written after review and confirmation.", accept: "Enable custom values", cancel: "Use game-table values", eyebrow: "Advanced editing" });
+  renderEnchants();
 };
+window.addEventListener("beforeunload", (event) => { if (STATE.changes.size) { event.preventDefault(); event.returnValue = ""; } });
+async function boot() {
+  try {
+    const state = await api("GET", "/api/state");
+    $("#savePath").value = state.path || "";
+    $("#versionLabel").textContent = `Game tables ${state.dataVersion}`;
+  } catch (error) { notice(error.message, "error"); }
+  renderStatus();
+}
 boot();

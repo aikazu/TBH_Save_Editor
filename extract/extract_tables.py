@@ -3,11 +3,11 @@ Extracts the data tables (CSV TextAssets) from sharedassets0.assets into data/ta
 Runs once on a machine with the game installed + UnityPy (pip install UnityPy).
 The result (data/tables/*.csv) is portable and ships with the app.
 """
-import os
-import UnityPy
+import sys
+from pathlib import Path
 
-GAME_DATA = r"C:\Program Files (x86)\Steam\steamapps\common\TaskbarHero\TaskBarHero_Data"
-OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "tables")
+sys.dont_write_bytecode = True
+from common import DEFAULT_DATA_DIR, DEFAULT_GAME_DIR, game_data_dir, parser, require_files
 
 # Tables required for items + enchantments (plus a few useful extras).
 WANTED = {
@@ -18,10 +18,13 @@ WANTED = {
 }
 
 
-def main():
-    os.makedirs(OUT, exist_ok=True)
-    env = UnityPy.load(os.path.join(GAME_DATA, "sharedassets0.assets"))
-    found = 0
+def main(game_dir=DEFAULT_GAME_DIR, output=DEFAULT_DATA_DIR):
+    import UnityPy
+
+    asset = game_data_dir(game_dir) / "sharedassets0.assets"
+    require_files([asset])
+    env = UnityPy.load(str(asset))
+    tables = {}
     for obj in env.objects:
         if obj.type.name != "TextAsset":
             continue
@@ -32,13 +35,19 @@ def main():
         raw = d.m_Script
         if isinstance(raw, str):
             raw = raw.encode("utf-8", "surrogateescape")
-        path = os.path.join(OUT, name + ".csv")
-        with open(path, "wb") as fh:
-            fh.write(bytes(raw))
+        tables[name] = bytes(raw)
+    missing = WANTED - tables.keys()
+    if missing:
+        raise ValueError("Required game tables not found: " + ", ".join(sorted(missing)))
+    out = Path(output) / "tables"
+    out.mkdir(parents=True, exist_ok=True)
+    for name, raw in sorted(tables.items()):
+        (out / (name + ".csv")).write_bytes(raw)
         print(f"  {name}.csv  ({len(raw)} bytes)")
-        found += 1
-    print(f"\nExtracted {found}/{len(WANTED)} tables into {OUT}")
+    print(f"\nExtracted {len(tables)}/{len(WANTED)} tables into {out}")
+    return len(tables)
 
 
 if __name__ == "__main__":
-    main()
+    args = parser(__doc__).parse_args()
+    main(args.game_dir, args.output)

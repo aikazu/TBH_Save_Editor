@@ -5,6 +5,10 @@
 > **automatic anti-tamper HMAC** on save. Runs locally in your browser, no
 > upload, no telemetry.
 
+Bundled data: **Taskbar Hero 1.2.4**, Steam build **25336766**. Data extraction,
+encrypted-copy checks, and browser checks are separate from loading an edited
+save in the game; an in-game reload has not been verified for this update.
+
 ![Python](https://img.shields.io/badge/Python-3-blue.svg)
 ![Dependencies](https://img.shields.io/badge/dependencies-0-success.svg)
 ![Runs](https://img.shields.io/badge/runs-locally%20100%25-orange.svg)
@@ -14,8 +18,7 @@
 > ## ⚠️ **DWYOR — Do With Your Own Risk**
 >
 > This tool modifies your encrypted save file. Although it is **game-table
-> validated** and re-signs the `SystemInfo` HMAC so the local anti-tamper check
-> still passes, **the game also performs server-side validation** for certain
+> validated** and recomputes the `SystemInfo` HMAC, **the game also performs server-side validation** for certain
 > things (crafted and dropped items are known to be checked). The
 > developer/publisher may expand detection at any time. Modifying a save —
 > even one the game considers "legal" locally — can still get your account
@@ -48,11 +51,13 @@
 
 ## ✨ Features
 
-- ✅ **Validated against the real game tables** — every enchant you create is game-legal
+- ✅ **Game-table validation** — checks normal edits against the bundled 1.2.4 tables
 - 🔐 **Local AES-128-CBC + HMAC-SHA256** — the save never leaves your machine
 - 📦 **Zero dependencies** — pure Python stdlib; a single optional `cryptography` for speed
-- 🧮 **Auto-recomputes `SystemInfo`** on save (anti-tamper check still passes in-game)
+- 🧮 **Recomputes `SystemInfo`** on save, with an automatic backup of the previous file
 - 🎯 **Stat-first editor** — see every tier of every stat, not just what one material happens to grant
+- 🔎 **Review before writing** — stage edits, compare before/after values, then save
+- 🔢 **Decimal values** — preserves values such as 0.5 and 11.5 without truncation
 - 🩹 **Auto-repair** for legacy broken `EnchantCount` (activates effects that look right but do nothing)
 
 ---
@@ -73,11 +78,16 @@ Opens `http://127.0.0.1:8765` in your browser. The save path is auto-filled.
 
 | # | Action | Result |
 |---|--------|--------|
-| 1 | Click **Load** | Save decrypted, heroes populated |
+| 1 | Enter the save path and click **Load save** | Save decrypted, heroes and save/table versions shown |
 | 2 | Pick a **hero** | See equipped items (icon + name) |
-| 3 | Click an **item** | 6 enchant slots: 2 Decoration, 2 Engraving, 2 Inscription |
-| 4 | **Edit** a slot | Pick stat → tier → value (defaults to MAX) |
-| 5 | **Save to Game** | Writes `.es3` (with `.bak` backup) and recomputes `SystemInfo` |
+| 3 | Select equipped **equipment** | See Decoration, Engraving, and Inscription slots; unavailable grade slots stay locked |
+| 4 | **Add** or **Edit** a slot, then **Apply enchant** | Pick stat → tier → value; the validated edit is staged in memory |
+| 5 | **Review & save**, then **Save with backup** | Review before/after values and destination; create `.es3.bak`, recompute HMAC, and write `.es3` |
+
+Clearing a filled slot and discarding staged changes both ask for confirmation.
+Advanced **Custom values** requires an explicit opt-in and skips the table's
+value range/step checks. Material, stat, tier, enum, slot/grade, and finite
+integer raw-value checks still apply. Game acceptance remains unverified.
 
 > ⚠️ **Close the game before saving** — otherwise it overwrites the file on exit.
 
@@ -156,7 +166,9 @@ saveEditor/
 │   ├── strings.json     # HeroName_<key> → hero display name
 │   ├── enums.json       # StatType / MODTYPE / ERecipeType / EMaterialType / EGradeType
 │   ├── icon_map.json
-│   └── icons/*.png      # 511 item / material icons
+│   ├── version.json     # source version, hashes, counts, verification scope
+│   └── icons/*.png      # 530 item / material icons
+├── tests/               # stdlib core + HTTP regression tests
 ├── docs/                # this guide + architecture + porting
 └── extract/             # one-shot scripts that GENERATE data/ (need UnityPy + the game)
 ```
@@ -178,33 +190,59 @@ Value                ∈  [MinValue, MaxValue], step = Interval
 
 `GearGroup` (`WEAPON` / `ARMOR` / `ACCESSORY` / `COMMON`) is derived from the
 `ItemKey` prefix (`3xxxxx` = weapon, `5xxxxx` = armor, `6xxxxx` = accessory).
-The editor rejects any combination the game itself would reject, so the result
-is always game-legit.
+Normal edits check material type, gear group, tier, value range/interval, and
+enum IDs against these tables. These local checks do not prove acceptance by
+the running game or its services.
 
-> 💡 **Stat display scaling**: most stats are stored as `raw_value * 10` and
-> displayed as percentages. The 5 *variant stats* (`AttackDamage`, `Armor`,
+> 💡 **Stat display scaling**: raw integer values may be divided by 10 or 100
+> for display. The 5 *variant stats* (`AttackDamage`, `Armor`,
 > `MaxHp`, `MovementSpeed`, `CriticalChance`) have a flat-integer variant
 > (FLAT) and a percent variant (ADDITIVE), resolved per-MODTYPE. The mapping
 > is in `core/gamedata.py:STAT_DISPLAY` and is curated against the
 > taskbarhero.wiki data.
 
+Decimal conversion preserves the raw value exactly: CooldownReduction raw
+`115` displays as `11.5`, and DamageAbsorption raw `5` as `0.5`. Non-finite
+numbers, values that cannot resolve to a whole raw integer, and normal edits
+outside the allowed interval are rejected before the item is changed.
+
 ---
 
 ## 🔄 Re-Extracting Data
 
-Data in `data/` was extracted from game version **1.00.17**. When the game
-updates and the values change, re-extract on a machine with the game +
-`pip install UnityPy`:
+Data in `data/` comes from **1.2.4**, Steam build **25336766**. To refresh it,
+install UnityPy in an extraction environment and obtain an Il2CppDumper
+`dump.cs` from the same installed build:
 
 ```powershell
-python extract/extract_all.py
+python -m pip install UnityPy
+python -B extract/extract_all.py --dump-path 'C:\path\to\dump.cs' --game-version 1.2.4 --steam-build 25336766
 ```
+
+For another Steam library, add `--game-dir 'D:\SteamLibrary\steamapps\common\TaskbarHero'`.
+The default is the standard Windows Steam location; a `TaskBarHero_Data`
+directory is also accepted. `--output` selects a separate generated data directory.
+Missing prerequisites fail before publication. All extractors and catalog checks
+run in staging before replacing `data/`; `version.json` records source hashes
+and explicitly marks in-game verification as incomplete.
 
 | If the game changes… | Do this |
 |---|---|
-| Table values / names / icons | `python extract/extract_all.py` |
+| Table values / names / icons / enums | Run the extraction command above with the new build's dump and versions |
 | `SystemInfo` HMAC key | See **[`docs/PORTING.md`](docs/PORTING.md)** — runtime key extraction via `dtcore.dll` (F8 hotkey) |
 | ES3 password | Search `stringliteral.json` in the dump for ~22-char strings near the save manager; usually doesn't change |
+
+### Checks
+
+```powershell
+python -B -m unittest discover -s tests -v
+python -B -m unittest discover -s extract -p 'test_*.py' -v
+```
+
+The current suites contain 27 core/HTTP tests and 5 extraction failure tests.
+They cover decimal round-trips, legal table values, rejected edits, encrypted
+fixture save/reload with backup, and extraction rollback. Use a disposable
+copy for browser checks; game reload remains a separate manual check.
 
 ---
 

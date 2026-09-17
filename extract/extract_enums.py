@@ -3,14 +3,15 @@ Parses the relevant enums from dump.cs (Il2CppDumper) -> data/enums.json.
 Needed to translate the numeric codes in the save (StatType:24, ModType:0, RecipeType:3...)
 into names, and to cross-reference with the CSV tables (which use the names).
 """
-import json
-import os
 import re
+import sys
+from pathlib import Path
 
-DUMP = r"C:\Users\gmarques\Downloads\TBH_dump_1.00.17\output\dump.cs"
-OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "enums.json")
+sys.dont_write_bytecode = True
+from common import DEFAULT_DATA_DIR, parser, require_files, write_json
 
 WANTED = ["StatType", "MODTYPE", "ERecipeType", "EMaterialType", "EGradeType", "GearGroup", "GEARGROUP"]
+REQUIRED = {"StatType", "MODTYPE", "ERecipeType", "EMaterialType", "EGradeType"}
 
 
 def parse_enum(text, name):
@@ -30,21 +31,30 @@ def parse_enum(text, name):
     return members
 
 
-def main():
-    os.makedirs(os.path.dirname(OUT), exist_ok=True)
-    text = open(DUMP, encoding="utf-8", errors="ignore").read()
+def read_enums(dump_path):
+    require_files([dump_path])
+    text = Path(dump_path).read_text(encoding="utf-8")
     out = {}
     for name in WANTED:
         e = parse_enum(text, name)
         if e:
             out[name] = e
             print(f"  {name}: {len(e)} members  (ex: {list(e.items())[:4]})")
-        else:
-            print(f"  {name}: NOT found")
-    with open(OUT, "w", encoding="utf-8") as fh:
-        json.dump(out, fh, ensure_ascii=False, indent=2)
-    print(f"\n-> {OUT}")
+    missing = REQUIRED - out.keys()
+    if missing:
+        raise ValueError("Required enums not found in dump: " + ", ".join(sorted(missing)))
+    return out
+
+
+def main(dump_path, output=DEFAULT_DATA_DIR):
+    enums = read_enums(dump_path)
+    out = Path(output)
+    out.mkdir(parents=True, exist_ok=True)
+    write_json(out / "enums.json", enums)
+    print(f"\n-> {out / 'enums.json'}")
+    return {name: len(members) for name, members in enums.items()}
 
 
 if __name__ == "__main__":
-    main()
+    args = parser(__doc__, dump=True).parse_args()
+    main(args.dump_path, args.output)

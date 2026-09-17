@@ -6,14 +6,12 @@ Only the keys the app actually consumes are written (saves ~110KB of dead weight
   - StringTable-> data/strings.json   (only HeroName_<key> -> hero display name)
 Chain: SharedTableData (m_Id -> m_Key) + <Table>_en (m_Id -> m_Localized).
 """
-import json
-import os
 import re
-import UnityPy
+import sys
+from pathlib import Path
 
-AA = (r"C:\Program Files (x86)\Steam\steamapps\common\TaskbarHero"
-      r"\TaskBarHero_Data\StreamingAssets\aa\StandaloneWindows64")
-OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
+sys.dont_write_bytecode = True
+from common import DEFAULT_DATA_DIR, DEFAULT_GAME_DIR, game_data_dir, parser, require_files, write_json
 
 SHARED = "localization-assets-shared_assets_all.bundle"
 BUNDLE = "localization-string-tables-english(unitedstates)(en-us)_assets_all.bundle"
@@ -21,9 +19,11 @@ ITEMNAME_RE = re.compile(r"^ItemName_(\d+)$")
 HERONAME_RE = re.compile(r"^HeroName_(\d+)$")
 
 
-def shared_id_map(collection):
+def shared_id_map(collection, aa):
     """m_Id -> m_Key of the collection (ItemTable / StringTable)."""
-    env = UnityPy.load(os.path.join(AA, SHARED))
+    import UnityPy
+
+    env = UnityPy.load(str(aa / SHARED))
     out = {}
     for obj in env.objects:
         if obj.type.name != "MonoBehaviour":
@@ -36,8 +36,10 @@ def shared_id_map(collection):
     return out
 
 
-def locale_table(table_prefix, id_to_key, key_filter):
-    env = UnityPy.load(os.path.join(AA, BUNDLE))
+def locale_table(table_prefix, id_to_key, key_filter, aa):
+    import UnityPy
+
+    env = UnityPy.load(str(aa / BUNDLE))
     out = {}
     for obj in env.objects:
         if obj.type.name != "MonoBehaviour":
@@ -66,22 +68,27 @@ def _to_herokey(key):
     return key if m else None  # keep full "HeroName_<n>" key
 
 
-def main():
-    os.makedirs(OUT, exist_ok=True)
-    items_ids = shared_id_map("ItemTable")
-    strings_ids = shared_id_map("StringTable")
+def main(game_dir=DEFAULT_GAME_DIR, output=DEFAULT_DATA_DIR):
+    aa = game_data_dir(game_dir) / "StreamingAssets/aa/StandaloneWindows64"
+    require_files([aa / SHARED, aa / BUNDLE])
+    items_ids = shared_id_map("ItemTable", aa)
+    strings_ids = shared_id_map("StringTable", aa)
     print(f"SharedTableData: ItemTable={len(items_ids)} StringTable={len(strings_ids)}")
 
-    names = locale_table("ItemTable_", items_ids, _to_itemkey)
-    with open(os.path.join(OUT, "names.json"), "w", encoding="utf-8") as fh:
-        json.dump(names, fh, ensure_ascii=False, indent=2)
+    names = locale_table("ItemTable_", items_ids, _to_itemkey, aa)
+    hero_names = locale_table("StringTable_", strings_ids, _to_herokey, aa)
+    if not names or not hero_names:
+        raise ValueError("English item or hero localization is empty")
+    out = Path(output)
+    out.mkdir(parents=True, exist_ok=True)
+    write_json(out / "names.json", names)
     print(f"  names.json: {len(names)} item names")
 
-    hero_names = locale_table("StringTable_", strings_ids, _to_herokey)
-    with open(os.path.join(OUT, "strings.json"), "w", encoding="utf-8") as fh:
-        json.dump(hero_names, fh, ensure_ascii=False, indent=2)
+    write_json(out / "strings.json", hero_names)
     print(f"  strings.json: {len(hero_names)} hero names  (ex: {hero_names.get('HeroName_101')!r})")
+    return {"itemNames": len(names), "heroNames": len(hero_names)}
 
 
 if __name__ == "__main__":
-    main()
+    args = parser(__doc__).parse_args()
+    main(args.game_dir, args.output)

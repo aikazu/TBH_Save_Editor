@@ -1,0 +1,63 @@
+{
+  "gameVersion": "1.2.4",
+  "steamBuild": "25336766",
+  "extractedAt": "2026-09-17T05:31:59+00:00",
+  "source": {
+    "kind": "installed-game-assets-and-il2cpp-dump",
+    "versionEvidence": "Game version and Steam build supplied to extraction command",
+    "unityPyVersion": "1.25.3",
+    "sha256": {
+      "sharedassets0.assets": "bed243deb63d4ed4c74067978482465a5004663ed5cbcfb39a901c1400cbf882",
+      "sharedassets0.assets.resS": "56cbabf6cdf5d07ade571280fcc1b4a2db10bbdfdf92d7caf043cdfc09d2fcf2",
+      "localization-assets-shared_assets_all.bundle": "b8192fb2eb8af62dd113e20cc6c792c5740aaa4311bad04861280dc926755cf1",
+      "localization-string-tables-english(unitedstates)(en-us)_assets_all.bundle": "8729d6cde0e9ce8240c6dcfba54c30ed1db9243ae7d4e0aaeb5e034ea319bf2b",
+      "dump.cs": "599a358b44d5418ec3971eda8974eb830093ead6345a48fa6e8b368618763266"
+    }
+  },
+  "counts": {
+    "tableRows": {
+      "AttributeGroupInfoData": 8,
+      "CurrencyInfoData": 1,
+      "GearInfoData": 5954,
+      "GearTypeInfoData": 16,
+      "GearTypeScaleInfoData": 20,
+      "GradeInfoData": 10,
+      "HeroInfoData": 6,
+      "InventoryInfoData": 260,
+      "ItemTypeScaleInfoData": 2,
+      "MaterialInfoData": 143,
+      "RuneInfoData": 248,
+      "RuneLevelInfoData": 833,
+      "StatModGroupInfoData": 474,
+      "StatModInfoData": 620,
+      "SynthesisRecipeInfoData": 587
+    },
+    "enumMembers": {
+      "StatType": 65,
+      "MODTYPE": 3,
+      "ERecipeType": 10,
+      "EMaterialType": 8,
+      "EGradeType": 11
+    },
+    "itemNames": 534,
+    "heroNames": 6,
+    "icons": 530,
+    "missingIconKeys": [
+      "150102",
+      "150108",
+      "150109",
+      "150110"
+    ],
+    "localizedKeysWithoutItemDefinitionOrIcon": [
+      "150102",
+      "150108",
+      "150109",
+      "150110"
+    ]
+  },
+  "verification": {
+    "dataExtraction": true,
+    "catalogChecks": true,
+    "inGameVerified": false
+  }
+}

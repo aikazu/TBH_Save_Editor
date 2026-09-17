@@ -4,7 +4,13 @@
 > full checklist, how to extract the new HMAC key, the reverse-engineering
 > workflow, and the data extraction pipeline.
 >
-> All concrete values in this guide are from game version **1.00.17**.
+> Bundled data now targets **1.2.4**, Steam build **25336766**. Historical
+> crypto keys, obfuscated method names, and RVAs below describe **1.00.17**;
+> do not assume those method locations still apply to a newer binary.
+
+Current verification covers extracted data and local encrypted-copy checks.
+Browser checks also use disposable copies. Loading an edited save in game
+1.2.4 has not been verified; `data/version.json` records that boundary.
 
 ---
 
@@ -16,15 +22,16 @@ When a new game version drops, walk this list top to bottom:
 |---|---|---|---|
 | 1 | **Decrypt** the new save with the current ES3 password | ✅ Save opens | → Password changed, see [§2](#2-es3-crypto) |
 | 2 | **Test the current HMAC key** against the new `SystemInfo` | ✅ Hash matches | → Key changed, see [§4](#4-extracting-the-hmac-key) |
-| 3 | **Re-extract data** (tables / names / icons) | ✅ Editor works on new saves | Investigate schema changes (rare) |
-| 4 | **Smoke-test**: load → edit one item → save → open in-game | ✅ All good | Walk the chain again |
+| 3 | **Re-extract data** (tables / enums / names / icons) with a matching dump | Catalog reflects the installed build | Inspect extractor errors and schema changes |
+| 4 | **Test a copy**: load → hero → equipment → edit → review → save with backup → decrypt/reload; separately load in-game | Record local and game results separately | Investigate the failing boundary |
 | 5 | **Ship it** | 🎉 | Open an issue with details |
 
-The good news: the **algorithm** (HMAC-SHA256 over `account|player|steamId`)
-and the **crypto** (ES3 AES-128-CBC) have been **stable across versions**.
-What usually changes is the **HMAC key value** and **table data**.
+The implemented algorithm is HMAC-SHA256 over `account|player|steamId`, with
+ES3 AES-128-CBC encryption. Check both crypto compatibility and table data
+for each update; successful decryption alone does not validate the tables.
 
-> 💡 Historical stability: ES3 password, IV handling, JSON schema, and HMAC composition haven't changed between 1.00.x versions. Expect this to keep holding.
+> Historical 1.00.x observations are background, not a compatibility guarantee
+> for the next update. Preserve original saves and work on copies during checks.
 
 ---
 
@@ -116,7 +123,7 @@ SystemInfo = Base64(
 | Separator | `\|` (single pipe) |
 | Encoding | base64 of raw digest |
 
-### Validation in the game (`bal.mcr`)
+### Historical 1.00.17 validation in the game (`bal.mcr`)
 
 Two checks on load:
 
@@ -130,15 +137,16 @@ currently logged-in Steam account.
 ### Editor consequence
 
 On every save, the editor **recomputes `SystemInfo`** over the exact bytes
-it just serialized. The result is byte-stable, and the game accepts it.
+it just serialized. Verify the resulting encrypted copy and HMAC first;
+acceptance by the game is a separate test.
 
 > **Side note:** our compact `json.dumps` differs from the game's Newtonsoft
 > output only in float notation (e.g. `2.7e+11` vs `270000000000.0`) —
-> semantically identical, harmless.
+> semantically equivalent JSON. That equivalence does not replace a game-load test.
 
 ### Verifying a key (the "oracle")
 
-Use the included oracle script (in the upstream `editor/` tooling) to test
+Use the oracle script from the upstream `editor/` tooling (not shipped in this repository) to test
 candidate keys against a real `SystemInfo` value. The oracle tries multiple
 orderings and separators; if any combination reproduces the stored hash,
 the key is correct.
@@ -165,7 +173,10 @@ game.
 - The method internally runs `Rfc2898DeriveBytes` (PBKDF2-HMAC-SHA1) on
   strings read from a blob, with a hard-coded salt and iteration count.
 
-### Live extraction via the trainer DLL
+### Historical live extraction via the trainer DLL
+
+The trainer and identifiers in this section belong to the original 1.00.17
+workflow. They were not used or validated during this 1.2.4 data refresh.
 
 `dtcore.dll` is injected into the game process by the trainer launcher.
 It exposes a `DumpSaveKey()` function that, when triggered by the **F8**
@@ -218,8 +229,8 @@ The reverse-engineering workflow below covers this in more detail.
 
 ## 5. Reverse-Engineering Workflow
 
-The key discovery was done with **Ghidra 12 + pyghidra** in
-`C:\Users\gmarques\Downloads\ghidra_re\`. The general flow:
+The original key discovery used **Ghidra 12 + pyghidra** and the upstream
+`ghidra_re` tooling. The general flow:
 
 1. **Dump** the game with **Il2CppDumper** → `dump.cs` (signatures + RVAs),
    `stringliteral.json`, `script.json`.
@@ -257,13 +268,27 @@ The key discovery was done with **Ghidra 12 + pyghidra** in
 
 ## 6. Re-Extracting Data (tables / names / icons)
 
-For the editor's data files in `data/`. Requires `pip install UnityPy` (only
-needed here, not for running the editor itself).
+For the editor's generated files in `data/`. UnityPy is required only for
+extraction; the editor runtime still uses the Python standard library. Supply
+an Il2CppDumper `dump.cs` produced from the same installed game build.
 
 ```powershell
-pip install UnityPy
-python extract\extract_all.py
+python -m pip install UnityPy
+python -B extract\extract_all.py --dump-path 'C:\path\to\dump.cs' --game-version 1.2.4 --steam-build 25336766
 ```
+
+`--game-dir` accepts the install root or `TaskBarHero_Data`; its default is
+`C:\Program Files (x86)\Steam\steamapps\common\TaskbarHero`.
+Use `--output 'C:\path\to\extracted-data'` to inspect a refresh separately.
+Version/build arguments must describe the inputs; the extractor records them
+as supplied values, not a detected or in-game-verified version.
+
+Preflight checks the asset files, texture resource, localization bundles,
+matching dump's required enums, and UnityPy before publication. Extraction
+runs in a temporary staging directory. Only after all four steps and catalog
+checks pass does it replace the generated directory. A failed extraction
+leaves prior data intact; a publication error attempts rollback and preserves
+a recovery copy if restoration itself fails.
 
 The orchestrator runs four sub-scripts in sequence:
 
@@ -274,12 +299,22 @@ The orchestrator runs four sub-scripts in sequence:
 | 3 | `extract_localization.py` | localization bundles (`localization-string-tables-english(unitedstates)(en-us)_assets_all.bundle`) | `data/names.json`, `data/strings.json` |
 | 4 | `extract_sprites.py` | `sharedassets0.assets` Sprites | `data/icons/*.png` + `data/icon_map.json` |
 
+The full command also generates `data/version.json`: game version/build,
+UTC extraction time, source hashes, UnityPy version, counts, coverage limits,
+and `verification.inGameVerified: false`.
+
+The 1.2.4 snapshot contains 15 tables, 534 item names, 6 hero names, and 530
+icons. Enum counts are StatType 65, MODTYPE 3, ERecipeType 10, EMaterialType 8,
+and EGradeType 11. All old numeric IDs remain unchanged; new members include
+MaxAllElementalResistance, CORROSION, and ETC.
+
 ### Where the data lives in the game
 
 ```
 <Steam>\steamapps\common\TaskbarHero\
 └── TaskBarHero_Data\
     ├── sharedassets0.assets               ← tables (TextAsset), sprites
+    ├── sharedassets0.assets.resS          ← sprite texture data
     └── StreamingAssets\
         └── aa\StandaloneWindows64\
             ├── localization-assets-shared_assets_all.bundle
@@ -304,7 +339,35 @@ data lean (~16KB instead of ~130KB of unconsumed strings).
 - Materials: `Item_<ItemKey>`
 - Equipment: `<TYPE>_<GearKey>`
 
-Coverage: 1 sprite per `ItemKey`, no ambiguity.
+Shared sprites are resolved through `ItemInfoData.IconPath`, including coins
+and plague-fruit variants. Four localized keys (`150102`, `150108`, `150109`,
+`150110`) have neither an item definition nor a sprite in the current build;
+they remain listed in the generated coverage metadata. Every named item with
+an item definition and every enchant material has an extracted icon.
+
+### Local verification before a game test
+
+```powershell
+python -B -m unittest discover -s tests -v
+python -B -m unittest discover -s extract -p 'test_*.py' -v
+```
+
+The current 26 core/HTTP tests cover legal raw-value round-trips, fractional
+display ranges/steps, enum and Custom values identity validation, rejection without mutation, and an
+encrypted fixture's save/reload plus exact backup. The 5 extractor tests cover
+missing inputs, incomplete dumps, partial extraction, and rollback failures.
+These tests do not launch the game.
+
+The 1.2.4 table refresh changes all four elemental/chaos resistance families
+at tiers 4–10; tier 10 now spans 80–90 instead of 50–55. Several material
+stat/tier mappings also changed. Refreshing only the version label would leave
+normal editing inconsistent with these tables.
+
+Use a disposable encrypted save copy for browser verification. Check an existing
+enchant opens with its current stat/tier/value, apply a decimal value such as
+DamageAbsorption 0.5, review before/after, save with backup, and reload the copy.
+`to_raw()` must reject input that cannot resolve to an integer raw value rather
+than truncate it. Keep the game-load result separate from these local checks.
 
 ---
 
@@ -315,11 +378,13 @@ Coverage: 1 sprite per `ItemKey`, no ambiguity.
 | `core/es3.py` | AES-CBC + PKCS7 + HMAC; `SaveFile.load` / `SaveFile.save` |
 | `core/aes_pure.py` | Pure-Python AES-128-CBC fallback (NIST-validated) |
 | `core/gamedata.py` | Table loaders + enchant validation engine |
-| `editor/oracle_systeminfo.py` | Verify candidate HMAC keys against a real `SystemInfo` |
-| `editor/decrypt_es3.py` | Decrypt a `.es3` to plain JSON (one-shot CLI) |
-| `TBH_Trainer_v1.3.0/TBHHook/dllmain.cpp` | `DumpSaveKey` / `DumpSaveLiterals` (F8 hotkey) |
-| `ghidra_re/decomp_pyghidra.py` + helpers | Ghidra decompilation script |
+| `editor/oracle_systeminfo.py` | Upstream-only historical tool to verify candidate HMAC keys |
+| `editor/decrypt_es3.py` | Upstream-only historical decryption CLI |
+| `TBH_Trainer_v1.3.0/TBHHook/dllmain.cpp` | Upstream-only historical `DumpSaveKey` / `DumpSaveLiterals` |
+| `ghidra_re/decomp_pyghidra.py` + helpers | Upstream-only Ghidra tooling |
 | `extract/extract_*.py` | One-shot data extraction (UnityPy) |
+| `data/version.json` | Generated source hashes, version/build, counts, and verification scope |
+| `tests/` / `extract/test_extraction.py` | Core/HTTP fixture checks and extraction failure checks |
 | `docs/ARCHITECTURE.md` | System design deep dive (read this first) |
 | `README.md` | Quick start, features, layout |
 

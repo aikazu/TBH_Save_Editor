@@ -73,22 +73,22 @@
 110,RuneName_DropChanceStageBossChest,5,,111 1101 1102,,110,DropChanceStageBossChest
 111,RuneName_DropChanceNormalChest,5,,112 1111,,111,DropChanceNormalChest
 112,RuneName_DropChanceStageBossChest,5,,113 1121,,112,DropChanceStageBossChest
-113,RuneName_DropChanceNormalChest,5,,114 1131 1132,,113,DropChanceNormalChest
+113,RuneName_DropChanceNormalChest,5,,114 1131 1132 1133,,113,DropChanceNormalChest
 114,RuneName_DropChanceStageBossChest,5,,115 1141 1142,,114,DropChanceStageBossChest
 115,RuneName_DropChanceNormalChest,5,,116,,115,DropChanceNormalChest
-116,RuneName_DropChanceStageBossChest,5,,117 1161,,116,DropChanceStageBossChest
+116,RuneName_DropChanceStageBossChest,5,,117 1161 1162,,116,DropChanceStageBossChest
 117,RuneName_DropChanceNormalChest,5,,118 1171 1172,,117,DropChanceNormalChest
 118,RuneName_DropChanceStageBossChest,5,,119 1181 1182,,118,DropChanceStageBossChest
 119,RuneName_DropChanceNormalChest,5,,120 1191,,119,DropChanceNormalChest
 120,RuneName_DropChanceStageBossChest,5,,121 1201 1202 1203,,120,DropChanceStageBossChest
-121,RuneName_DropChanceNormalChest,5,,122,,121,DropChanceNormalChest
+121,RuneName_DropChanceNormalChest,5,,122 1211,,121,DropChanceNormalChest
 122,RuneName_DropChanceStageBossChest,5,,123 1221 1222,,122,DropChanceStageBossChest
-123,RuneName_DropChanceNormalChest,5,,124,,123,DropChanceNormalChest
-124,RuneName_DropChanceStageBossChest,5,,125 1241,,124,DropChanceStageBossChest
+123,RuneName_DropChanceNormalChest,5,,124 1164,,123,DropChanceNormalChest
+124,RuneName_DropChanceStageBossChest,5,,125 1241 1242,,124,DropChanceStageBossChest
 125,RuneName_DropChanceNormalChest,5,,126 1251 1252,,125,DropChanceNormalChest
 126,RuneName_DropChanceStageBossChest,5,,127 1261 1262,,126,DropChanceStageBossChest
-127,RuneName_DropChanceNormalChest,5,,128,,127,DropChanceNormalChest
-128,RuneName_DropChanceStageBossChest,5,,1281 1282,,128,DropChanceStageBossChest
+127,RuneName_DropChanceNormalChest,5,,128 1271,,127,DropChanceNormalChest
+128,RuneName_DropChanceStageBossChest,5,,1281 1282 129,,128,DropChanceStageBossChest
 1021,RuneName_OpenOneTypeChestAllAtOnce,1,,,,1021,OpenOneTypeChestAllAtOnce
 1031,RuneName_MaxAmountNormalChest,1,1,,1071,1031,MaxAmountNormalChest
 1051,RuneName_MaxInventorySlot,5,,1052 1053 1055 1056,,1051,MaxInventorySlot
@@ -112,6 +112,15 @@
 1142,RuneName_MaxAmountNormalChest,1,,,,1142,MaxAmountNormalChest
 1161,RuneName_MaxAmountNormalChest,1,,11611,,1161,MaxAmountNormalChest
 11611,RuneName_MaxAmountNormalChest,1,,,,11611,MaxAmountNormalChest
+1162,RuneName_MaxAmountPlagueNormalChest,1,,11621 1163 11629,,1162,MaxAmountPlagueNormalChest
+1163,RuneName_UnlockAutoOpenPlagueNormalChest,1,1,11631,,1163,UnlockAutoOpenPlagueNormalChest
+11631,RuneName_ReduceAutoOpenPlagueNormalChestTime,5,,11632,,11631,ReduceAutoOpenPlagueNormalChestTime
+1164,RuneName_MaxAmountPlagueStageBossChest,1,,1165 11641 11649,,1164,MaxAmountPlagueStageBossChest
+1165,RuneName_UnlockAutoOpenPlagueStageBossChest,1,1,11651,,1165,UnlockAutoOpenPlagueStageBossChest
+11651,RuneName_ReduceAutoOpenPlagueStageBossChestTime,5,,11652,,11651,ReduceAutoOpenPlagueStageBossChestTime
+1166,RuneName_MaxAmountPlagueActBossChest,1,,1167 11661,,1166,MaxAmountPlagueActBossChest
+1167,RuneName_UnlockAutoOpenPlagueActBossChest,1,1,11671,,1167,UnlockAutoOpenPlagueActBossChest
+11671,RuneName_ReduceAutoOpenPlagueActBossChestTime,5,,11672,,11671,ReduceAutoOpenPlagueActBossChestTime
 1171,RuneName_WaveCountReduction,1,,,,1171,WaveCountReduction
 1172,RuneName_MaxAmountStageBossChest,1,,,,1172,MaxAmountStageBossChest
 1181,RuneName_MaxAmountStageBossChest,1,,,,1181,MaxAmountStageBossChest
@@ -190,9 +199,51 @@
 411,RuneName_AllHeroAttackDamage,5,,412,,411,AllHeroAttackDamage
 412,RuneName_AllHeroArmorPercent,5,,413,,412,AllHeroArmorPercent
 413,RuneName_AllHeroAttackDamagePercent,5,,414,,413,AllHeroAttackDamagePercent
-414,RuneName_AllHeroAttackSpeed,5,,,,414,AllHeroAttackSpeed
+414,RuneName_AllHeroAttackSpeed,5,,415,,414,AllHeroAttackSpeed
 4031,RuneName_AllHeroAttackDamage,1,1,,,4031,AllHeroAttackDamage
 4061,RuneName_AllHeroAttackSpeed,3,,,,4061,AllHeroAttackSpeed
 4081,RuneName_AllHeroAttackDamage,5,,4082,,4081,AllHeroAttackDamage
 4082,RuneName_AllHeroMoveSpeed,1,,,,4082,AllHeroMoveSpeed
 4101,RuneName_AllHeroMoveSpeed,5,,,,4101,AllHeroMoveSpeed
+1242,RuneName_WaveCountReduction,1,,,,1242,WaveCountReduction
+129,RuneName_DropChanceNormalChest,5,,130 1166,,129,DropChanceNormalChest
+130,RuneName_DropChanceStageBossChest,5,,131 1301 1302,,130,DropChanceStageBossChest
+131,RuneName_DropChanceNormalChest,5,,132 1311,,131,DropChanceNormalChest
+132,RuneName_DropChanceStageBossChest,5,,1322,,132,DropChanceStageBossChest
+1301,RuneName_WaveCountReduction,1,,,,1301,WaveCountReduction
+11621,RuneName_MaxAmountPlagueNormalChest,1,,11622,,11621,MaxAmountPlagueNormalChest
+11622,RuneName_MaxAmountPlagueNormalChest,1,,11623,,11622,MaxAmountPlagueNormalChest
+11623,RuneName_MaxAmountPlagueNormalChest,1,,11624,,11623,MaxAmountPlagueNormalChest
+11624,RuneName_MaxAmountPlagueNormalChest,1,,,,11624,MaxAmountPlagueNormalChest
+11632,RuneName_ReduceAutoOpenPlagueNormalChestTime,5,,11633,,11632,ReduceAutoOpenPlagueNormalChestTime
+11633,RuneName_ReduceAutoOpenPlagueNormalChestTime,5,,,,11633,ReduceAutoOpenPlagueNormalChestTime
+11641,RuneName_MaxAmountPlagueStageBossChest,1,,11642,,11641,MaxAmountPlagueStageBossChest
+11642,RuneName_MaxAmountPlagueStageBossChest,1,,11643,,11642,MaxAmountPlagueStageBossChest
+11643,RuneName_MaxAmountPlagueStageBossChest,1,,11644,,11643,MaxAmountPlagueStageBossChest
+11644,RuneName_MaxAmountPlagueStageBossChest,1,,,,11644,MaxAmountPlagueStageBossChest
+11652,RuneName_ReduceAutoOpenPlagueStageBossChestTime,5,,11653,,11652,ReduceAutoOpenPlagueStageBossChestTime
+11653,RuneName_ReduceAutoOpenPlagueStageBossChestTime,5,,,,11653,ReduceAutoOpenPlagueStageBossChestTime
+11661,RuneName_MaxAmountPlagueActBossChest,1,,11662,,11661,MaxAmountPlagueActBossChest
+11662,RuneName_MaxAmountPlagueActBossChest,1,,11663,,11662,MaxAmountPlagueActBossChest
+11663,RuneName_MaxAmountPlagueActBossChest,1,,11664,,11663,MaxAmountPlagueActBossChest
+11664,RuneName_MaxAmountPlagueActBossChest,1,,,,11664,MaxAmountPlagueActBossChest
+11672,RuneName_ReduceAutoOpenPlagueActBossChestTime,5,,11673,,11672,ReduceAutoOpenPlagueActBossChestTime
+11673,RuneName_ReduceAutoOpenPlagueActBossChestTime,5,,,,11673,ReduceAutoOpenPlagueActBossChestTime
+415,RuneName_AllHeroArmor,5,,416,,415,AllHeroArmor
+416,RuneName_AllHeroAttackDamage,5,,417,,416,AllHeroAttackDamage
+417,RuneName_AllHeroAttackDamagePercent,5,,418,,417,AllHeroAttackDamagePercent
+418,RuneName_AllHeroAttackSpeed,5,,419,,418,AllHeroAttackSpeed
+419,RuneName_AllHeroArmor,5,,420,,419,AllHeroArmor
+420,RuneName_AllHeroAttackDamage,5,,4171 4172 421,,420,AllHeroAttackDamage
+4171,RuneName_CubeExpPercent,5,,,,4171,CubeExpPercent
+4172,RuneName_CubeAlchemyGoldPercent,5,,,,4172,CubeAlchemyGoldPercent
+421,RuneName_AllHeroArmorPercent,5,,4211 422,,421,AllHeroArmorPercent
+422,RuneName_AllHeroAttackDamage,5,,,,422,AllHeroAttackDamage
+4211,RuneName_AllHeroMoveSpeed,5,,,,4211,AllHeroMoveSpeed
+11629,RuneName_DropChancePlagueNormalChestPercent,5,,,,11629,DropChancePlagueNormalChest
+11649,RuneName_DropChancePlagueStageBossChestPercent,5,,,,11649,DropChancePlagueStageBossChest
+1211,RuneName_DropChancePlagueNormalChestPercent,5,,,,1211,DropChancePlagueNormalChest
+1302,RuneName_DropChancePlagueStageBossChestPercent,5,,,,1302,DropChancePlagueStageBossChest
+1271,RuneName_DropChancePlagueNormalChestPercent,5,,,,1271,DropChancePlagueNormalChest
+1322,RuneName_DropChancePlagueStageBossChestPercent,5,,,,1322,DropChancePlagueStageBossChest
+1311,RuneName_DropChancePlagueNormalChestPercent,5,,,,1311,DropChancePlagueNormalChest
