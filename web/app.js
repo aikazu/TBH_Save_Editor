@@ -54,12 +54,14 @@ async function busy(button, label, work) {
     renderStatus();
   }
 }
-function confirmAction({ title, description, accept, cancel = "Cancel", eyebrow = "Confirm action", body }) {
+function confirmAction({ title, description, accept, cancel = "Cancel", eyebrow = "Confirm action", body, danger = false }) {
   const dialog = $("#confirmDialog");
   $("#dialogTitle").textContent = title;
   $("#dialogDescription").textContent = description;
   $("#dialogEyebrow").textContent = eyebrow;
   $("#dialogAccept").textContent = accept;
+  // Risky confirmations must not get the most inviting button; amber stays with the safe path.
+  $("#dialogAccept").className = danger ? "danger-action" : "primary";
   $("#dialogCancel").textContent = cancel;
   $("#dialogBody").replaceChildren();
   if (body) $("#dialogBody").append(body);
@@ -94,7 +96,7 @@ function empty(node, heading, text) {
 
 async function loadSave() {
   if (STATE.busy) return;
-  if (STATE.changes.size && !await confirmAction({ title: "Discard staged changes?", description: "Loading a save replaces the unsaved changes in this workbench. Your file has not been changed.", accept: "Discard & load", cancel: "Keep editing" })) return;
+  if (STATE.changes.size && !await confirmAction({ title: "Discard staged changes?", description: "Loading a save replaces the unsaved changes in this workbench. Your file has not been changed.", accept: "Discard & load", cancel: "Keep editing", danger: true })) return;
   await busy($("#btnLoad"), "Loading…", async () => {
     notice("Reading and decrypting your save…");
     try {
@@ -235,7 +237,7 @@ function slotRow(slot) {
       clear.type = "button"; clear.setAttribute("aria-label", `Clear ${slot.label.toLowerCase()} ${slot.slot % 2 + 1}`);
       clear.onclick = async () => {
         if (STATE.busy) return;
-        if (await confirmAction({ title: `Clear this ${slot.label.toLowerCase()}?`, description: `${STATE.item.name}: ${describeSlot(slot)}. This change will be staged until you save.`, accept: "Clear enchant", cancel: "Keep enchant" })) {
+        if (await confirmAction({ title: `Clear this ${slot.label.toLowerCase()}?`, description: `${STATE.item.name}: ${describeSlot(slot)}. This change will be staged until you save.`, accept: "Clear enchant", cancel: "Keep enchant", danger: true })) {
           await setEnchant({ uniqueId: STATE.item.uniqueId, slot: slot.slot, clear: true }, clear);
         }
       };
@@ -412,7 +414,7 @@ $("#btnSave").onclick = reviewSave;
 $("#itemSearch").oninput = renderItems;
 $("#cbCustom").onchange = async (event) => {
   const checkbox = event.target;
-  if (checkbox.checked) checkbox.checked = await confirmAction({ title: "Allow custom values?", description: "Custom values skip range validation. The game may reject these rolls. Your save is only written after review and confirmation.", accept: "Enable custom values", cancel: "Use game-table values", eyebrow: "Advanced editing" });
+  if (checkbox.checked) checkbox.checked = await confirmAction({ title: "Allow custom values?", description: "Custom values skip range validation. The game may reject these rolls. Your save is only written after review and confirmation.", accept: "Enable custom values", cancel: "Use game-table values", eyebrow: "Advanced editing", danger: true });
   renderEnchants();
 };
 window.addEventListener("beforeunload", (event) => { if (STATE.changes.size) { event.preventDefault(); event.returnValue = ""; } });

@@ -2,7 +2,7 @@
   color-scheme: dark;
   --canvas: #151714; --surface: #1d201b; --raised: #252920;
   --line: #3b4035; --control: #777e6e; --text: #f2f3eb; --muted: #b8bdb0;
-  --amber: #f0ba58; --amber-dark: #171a13; --success: #b4dca0; --danger: #ffb0a5;
+  --amber: #f0ba58; --amber-dark: #171a13; --success: #b4dca0; --danger: #ffb0a5; --danger-wash: #3a2522;
   --font: "Segoe UI", sans-serif; --heading: "Bahnschrift", "Segoe UI", sans-serif;
 }
 * { box-sizing: border-box; }
@@ -21,12 +21,14 @@ button.primary { background: var(--amber); border-color: var(--amber); color: va
 button.primary:hover:not(:disabled) { background: #ffd28a; border-color: #ffd28a; }
 button.quiet { border-color: transparent; color: var(--muted); }
 button.quiet:hover:not(:disabled) { color: var(--text); }
-button.danger { color: var(--danger); }
+button.danger-action { border-color: var(--danger); color: var(--danger); font-weight: 600; }
+button.danger-action:hover:not(:disabled) { background: var(--danger-wash); }
 input:not([type="checkbox"]):not([type="range"]), select { width: 100%; min-width: 0; min-height: 44px; padding: .65rem .8rem; border: 1px solid var(--control); border-radius: 5px; color: var(--text); background: var(--canvas); font-size: 1rem; }
 input::placeholder { color: #a4ab9a; }
 input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--amber); }
 input[type="range"] { width: 100%; min-width: 0; min-height: 44px; margin: 0; accent-color: var(--amber); }
-:focus-visible { outline: 3px solid var(--amber); outline-offset: 4px; }
+/* Focus is parchment, not amber, so it never reads as the amber selection state. */
+:focus-visible { outline: 3px solid var(--text); outline-offset: 3px; }
 input:disabled, select:disabled { opacity: .5; cursor: not-allowed; }
 input:user-invalid, select:user-invalid { border-color: var(--danger); }
 h1, h2, h3, p { margin: 0; }
