@@ -73,7 +73,7 @@ function confirmAction({ title, description, accept, cancel = "Cancel", eyebrow 
   });
 }
 $("#dialogAccept").onclick = () => $("#confirmDialog").close("accept");
-$("#dialogCancel").onclick = $("#dialogClose").onclick = () => $("#confirmDialog").close("cancel");
+$("#dialogCancel").onclick = () => $("#confirmDialog").close("cancel");
 
 function icon(url, className = "item-icon") {
   if (!url) return el("span", "slot-number", "?");
@@ -121,6 +121,27 @@ async function loadSave() {
     } catch (error) { notice(error.message, "error"); }
   });
 }
+// Hero and item lists are one Tab stop each; arrow keys, Home, and End move within them.
+function rovingFocus(list) {
+  const buttons = [...list.querySelectorAll("button")];
+  const current = buttons.find((button) => button.getAttribute("aria-pressed") === "true") || buttons[0];
+  buttons.forEach((button) => { button.tabIndex = button === current ? 0 : -1; });
+}
+function moveFocus(event) {
+  const buttons = [...event.currentTarget.querySelectorAll("button")];
+  const index = buttons.indexOf(document.activeElement);
+  if (index < 0) return;
+  const step = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[event.key];
+  const target = step ? buttons[(index + step + buttons.length) % buttons.length]
+    : event.key === "Home" ? buttons[0] : event.key === "End" ? buttons.at(-1) : null;
+  if (!target) return;
+  event.preventDefault();
+  buttons.forEach((button) => { button.tabIndex = button === target ? 0 : -1; });
+  target.focus();
+}
+$("#heroList").addEventListener("keydown", moveFocus);
+$("#itemGrid").addEventListener("keydown", moveFocus);
+
 function renderHeroes() {
   const list = $("#heroList");
   list.replaceChildren();
@@ -143,6 +164,7 @@ function renderHeroes() {
     };
     list.append(button);
   });
+  rovingFocus(list);
 }
 function renderItems() {
   const list = $("#itemGrid");
@@ -156,6 +178,9 @@ function renderItems() {
   if (!hero.items.length) return empty($("#itemEmpty"), "No equipment yet", `${hero.name} has no equipped items in this save. Choose another hero.`);
   const query = $("#itemSearch").value.trim().toLowerCase();
   const items = hero.items.filter((item) => `${item.name} ${item.grade} ${item.group}`.toLowerCase().includes(query));
+  if (query) $("#itemCount").textContent = `${items.length} of ${hero.items.length}`;
+  // An item hidden by the search should not stay open for editing out of view.
+  if (STATE.item && !items.some((item) => item.uniqueId === STATE.item.uniqueId)) { STATE.item = null; renderEnchants(); }
   $("#itemEmpty").hidden = items.length > 0;
   if (!items.length) empty($("#itemEmpty"), "No matching equipment", "Try a different name or rarity.");
   items.forEach((item) => {
@@ -176,6 +201,7 @@ function renderItems() {
     };
     list.append(button);
   });
+  rovingFocus(list);
 }
 function renderEnchants() {
   closeEditor();
@@ -276,7 +302,7 @@ async function openEditor(row, current, trigger) {
   const token = STATE.editorToken;
   const item = STATE.item;
   trigger.setAttribute("aria-expanded", "true");
-  const form = el("form", "editor"); form.id = `editor-${current.slot}`; form.method = "post"; form.action = "/api/set_enchant";
+  const form = el("form", "editor"); form.id = `editor-${current.slot}`; form.noValidate = true; form.method = "post"; form.action = "/api/set_enchant";
   form.append(el("p", "range-hint", "Loading available stats…")); row.append(form);
   let options;
   try {
@@ -316,10 +342,12 @@ async function openEditor(row, current, trigger) {
     const { option, chosen } = selection();
     const active = !!chosen;
     number.disabled = range.disabled = max.disabled = !active;
-    error.textContent = "";
+    range.style.visibility = active ? "" : "hidden";
+    error.textContent = ""; number.removeAttribute("aria-invalid");
     if (!active) { number.value = ""; hint.textContent = "Choose a stat to see its available tiers and values."; return; }
     const suffix = option.isPercent ? "%" : "";
     valueLabel.textContent = option.isPercent ? "Value (%)" : "Value";
+    range.setAttribute("aria-label", `${option.statName} value`);
     if (custom) { number.removeAttribute("min"); number.removeAttribute("max"); number.step = "any"; }
     else {
       number.min = range.min = chosen.min; number.max = range.max = chosen.max; number.step = range.step = chosen.interval || "any";
@@ -339,14 +367,23 @@ async function openEditor(row, current, trigger) {
     updateTier(keepCurrent);
   }
   stat.onchange = () => updateStat(); tier.onchange = () => updateTier();
-  number.oninput = () => { error.textContent = ""; if (number.value !== "") range.value = number.value; };
+  number.oninput = () => { error.textContent = ""; number.removeAttribute("aria-invalid"); if (number.value !== "") range.value = number.value; };
   range.oninput = () => { number.value = range.value; error.textContent = ""; };
   max.onclick = () => { number.value = range.value = selection().chosen.max; error.textContent = ""; };
   cancel.onclick = () => { closeEditor(); trigger.focus(); };
   form.addEventListener("keydown", (event) => { if (event.key === "Escape") { event.preventDefault(); closeEditor(); trigger.focus(); } });
   form.onsubmit = async (event) => {
-    event.preventDefault(); if (STATE.busy || !form.reportValidity()) return;
-    const { chosen } = selection(); if (!chosen) return;
+    event.preventDefault(); if (STATE.busy) return;
+    const { option, chosen } = selection();
+    // Validation speaks through #editError (role=alert) rather than the browser's transient tooltip.
+    if (!chosen) { error.textContent = "Choose a stat and tier first."; stat.focus(); return; }
+    if (!number.checkValidity()) {
+      const suffix = option.isPercent ? "%" : "";
+      error.textContent = custom || number.validity.valueMissing || number.validity.badInput
+        ? "Enter a number for the value."
+        : `Enter a value from ${format(chosen.min)}${suffix} to ${format(chosen.max)}${suffix}, in steps of ${format(chosen.interval)}${suffix}.`;
+      number.setAttribute("aria-invalid", "true"); number.focus(); return;
+    }
     const preserveMaterial = current.filled && current.identityValid && chosen.statModKey === current.statModKey && chosen.tier === current.tier;
     await setEnchant({ uniqueId: item.uniqueId, slot: current.slot, materialKey: preserveMaterial ? current.materialKey : chosen.materialKey, statModKey: chosen.statModKey, tier: chosen.tier, value: number.value, force: custom }, apply, error);
   };

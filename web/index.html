@@ -26,7 +26,7 @@
   <main id="workbench" class="workbench">
     <aside id="heroPane" class="hero-pane" aria-labelledby="heroTitle">
       <div class="pane-heading"><h2 id="heroTitle"><span class="step">01</span> Heroes</h2><span id="heroCount" class="count"></span></div>
-      <div id="heroList" class="hero-list"></div>
+      <div id="heroList" class="hero-list" role="group" aria-label="Heroes"></div>
       <div id="heroEmpty" class="small-empty">Your heroes appear here after loading a save.</div>
       <div class="rail-note"><p>Nothing is written until you review.</p><span>Choose a hero and an item, then edit its enchants. Changes stay staged until you save.</span></div>
     </aside>
@@ -34,7 +34,7 @@
       <div class="pane-heading"><h2 id="itemTitle"><span class="step">02</span> Equipment</h2><span id="itemCount" class="count"></span></div>
       <div id="heroSummary" class="hero-summary" hidden></div>
       <div id="itemTools" class="item-tools" hidden><label for="itemSearch">Find equipment</label><input id="itemSearch" type="search" name="equipment" placeholder="Name or rarity" autocomplete="off"></div>
-      <div id="itemGrid" class="item-list"></div>
+      <div id="itemGrid" class="item-list" role="group" aria-label="Equipped items"></div>
       <div id="itemEmpty" class="empty-state"><strong>Choose your hero</strong><p>Their equipped items will appear here.</p></div>
     </section>
     <section id="enchPane" class="enchant-pane" aria-labelledby="enchTitle" tabindex="-1">
@@ -51,7 +51,7 @@
   </main>
   <footer class="app-footer"><span id="statusPath">Waiting for a save</span><span>Close the game before saving.</span></footer>
   <dialog id="confirmDialog" aria-labelledby="dialogTitle" aria-describedby="dialogDescription">
-    <div class="dialog-top"><span id="dialogEyebrow">Save changes</span><button id="dialogClose" type="button" class="quiet" aria-label="Close dialog">Close</button></div>
+    <div class="dialog-top"><span id="dialogEyebrow">Save changes</span></div>
     <h2 id="dialogTitle">Review your changes</h2><p id="dialogDescription"></p>
     <div id="dialogBody"></div>
     <div class="dialog-actions"><button id="dialogCancel" type="button" class="secondary">Keep editing</button><button id="dialogAccept" type="button" class="primary">Save with backup</button></div>
