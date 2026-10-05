@@ -149,6 +149,27 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(Path(first["backup"]).read_bytes(), original_bytes)
         self.assertEqual(Path(second["backup"]).read_bytes(), first_saved_bytes)
 
+    def test_revert_restores_slot_and_applied_counter(self):
+        loaded = copy.deepcopy(self.load() and server.State.save.player)
+        self.assertEqual(self.request("POST", "/api/set_enchant", self.edit)[0], 200)
+        self.assertEqual(self.request("POST", "/api/set_enchant", {**self.edit, "value": 2.4})[0], 200)
+        self.assertEqual(server.State.save.player["itemSaveDatas"][0]["EngravingAppliedTotalCount"], 9)
+        status, item = self.request("POST", "/api/revert", {"uniqueId": "1001", "slot": 2})
+        self.assertEqual(status, 200, item)
+        self.assertFalse(item["enchants"][2]["filled"])
+        self.assertEqual(server.State.save.player, loaded)
+
+    def test_revert_targets_the_last_saved_state(self):
+        self.load()
+        self.assertEqual(self.request("POST", "/api/set_enchant", self.edit)[0], 200)
+        self.assertEqual(self.request("POST", "/api/save", {})[0], 200)
+        saved = copy.deepcopy(server.State.save.player)
+        self.assertEqual(self.request("POST", "/api/set_enchant", {**self.edit, "value": 2.4})[0], 200)
+        status, item = self.request("POST", "/api/revert", {"uniqueId": "1001", "slot": 2})
+        self.assertEqual(status, 200, item)
+        self.assertEqual(item["enchants"][2]["value"], 2.3)
+        self.assertEqual(server.State.save.player, saved)
+
     def test_backups_are_capped_but_keep_the_original(self):
         original_bytes = Path(self.path).read_bytes()
         legacy = Path(self.path + ".bak")

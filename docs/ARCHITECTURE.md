@@ -475,6 +475,7 @@ singleton `State.save` + `State.path`.
 | GET | `/api/stat_first?item=<key>&slot=<i>` | — | `{slot, gearGroup, options:[…]}` — stat-first dropdown data |
 | POST | `/api/load` | `{path?}` | `{heroes, path, saveVersion, dataVersion}` — load + decrypt .es3 |
 | POST | `/api/set_enchant` | `{uniqueId, slot, materialKey, statModKey, tier, value, clear?, force?}` | full item payload with validation errors; `value` is in display units |
+| POST | `/api/revert` | `{uniqueId, slot}` | full item payload — restores the slot and its AppliedTotalCount bumps to the last loaded/saved state |
 | POST | `/api/save` | `{}` | `{ok, path, backup, fixed}` — recount + encrypt + write; `backup` is the new dated `.bak` path |
 
 ### `/api/set_enchant` validation chain

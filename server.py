@@ -5,6 +5,7 @@ with validation against the game tables, and recomputes the SystemInfo on save.
 
 Usage:  python server.py        (opens http://127.0.0.1:8765 in the browser)
 """
+import copy
 import http.server
 import json
 import os
@@ -32,6 +33,44 @@ SLOT_LABELS = ["Decoration", "Decoration", "Engraving", "Engraving", "Inscriptio
 class State:
     save = None
     path = None
+    baseline = {}   # UniqueId -> item as last loaded or saved; what Revert restores
+    bumps = {}      # (UniqueId, slot) -> AppliedTotalCount increments since baseline
+
+
+def reset_baseline():
+    State.baseline = {str(it["UniqueId"]): copy.deepcopy(it)
+                      for it in State.save.player.get("itemSaveDatas", [])}
+    State.bumps = {}
+
+
+def revert_slot(it, slot):
+    """Undo every staged edit to one slot, including its applied-counter bumps."""
+    uid = str(it["UniqueId"])
+    orig = State.baseline.get(uid)
+    if orig is None:
+        raise ValueError("This item has no loaded state to restore")
+    data = it.setdefault("EnchantData", [])
+    orig_data = orig.get("EnchantData", [])
+    if slot < len(data):
+        data[slot] = copy.deepcopy(orig_data[slot]) if slot < len(orig_data) else GD.empty_enchant()
+    # Drop empty slots that edits appended beyond the original array.
+    while len(data) > len(orig_data) and data[-1] == GD.empty_enchant():
+        data.pop()
+    if not data and "EnchantData" not in orig:
+        del it["EnchantData"]
+    fld = gamedata.COUNT_FIELD[gamedata.SLOT_MATERIAL_TYPE[slot]]
+    count = int(it.get(fld, 0)) - State.bumps.pop((uid, slot), 0)
+    if fld in orig and count == int(orig[fld]):
+        it[fld] = orig[fld]
+    elif fld not in orig and count == 0:
+        it.pop(fld, None)
+    else:
+        it[fld] = count
+    # A legacy save may carry an inconsistent EnchantCount; restore it verbatim when nothing else differs.
+    if data == orig_data:
+        it["EnchantCount"] = copy.deepcopy(orig.get("EnchantCount"))
+    else:
+        GD.recount_enchants(it)
 
 
 def default_save_path():
@@ -189,6 +228,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 State.path = path
             except Exception as e:
                 return self._send(400, {"error": "Failed to load: %s" % e})
+            reset_baseline()
             return self._send(200, heroes_payload())
         if p == "/api/set_enchant":
             if not State.save:
@@ -234,7 +274,23 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 return self._send(200, item_payload(it))
             it["EnchantData"][slot] = ed
             GD.bump_applied(it, slot)     # +1 to the type's AppliedTotalCount
+            key = (str(it["UniqueId"]), slot)
+            State.bumps[key] = State.bumps.get(key, 0) + 1
             GD.recount_enchants(it)       # EnchantCount = active slots per type (ACTIVATES the effect in-game)
+            return self._send(200, item_payload(it))
+        if p == "/api/revert":
+            if not State.save:
+                return self._send(400, {"error": "Load a save first"})
+            it = find_item(body.get("uniqueId"))
+            if not it:
+                return self._send(404, {"error": "Item not found"})
+            try:
+                slot = int(body["slot"])
+                if slot not in range(6):
+                    raise ValueError("Slot must be between 0 and 5")
+                revert_slot(it, slot)
+            except (KeyError, ValueError, TypeError) as e:
+                return self._send(400, {"error": str(e)})
             return self._send(200, item_payload(it))
         if p == "/api/save":
             if not State.save:
@@ -251,6 +307,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 backup = State.save.save(State.path, backup=True)
             except Exception as e:
                 return self._send(500, {"error": str(e)})
+            reset_baseline()
             return self._send(200, {"ok": True, "path": State.path, "backup": backup, "fixed": fixed})
         return self._send(404, {"error": "Unknown route"})
 
