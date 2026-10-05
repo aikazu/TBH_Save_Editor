@@ -133,6 +133,20 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(reloaded.player["heroSaveDatas"], self.player["heroSaveDatas"])
         self.assertEqual(reloaded.player["itemSaveDatas"][0]["Durability"], 83)
         self.assertEqual(reloaded._es3["UnrelatedData"], self.fixture._es3["UnrelatedData"])
+
+    def test_second_save_keeps_the_original_backup(self):
+        original_bytes = Path(self.path).read_bytes()
+        self.load()
+        self.assertEqual(self.request("POST", "/api/set_enchant", self.edit)[0], 200)
+        status, first = self.request("POST", "/api/save", {})
+        self.assertEqual(status, 200, first)
+        first_saved_bytes = Path(self.path).read_bytes()
+        status, second = self.request("POST", "/api/save", {})
+        self.assertEqual(status, 200, second)
+        self.assertNotEqual(first["backup"], second["backup"])
+        self.assertTrue(first["backup"].endswith(".bak"))
+        self.assertEqual(Path(first["backup"]).read_bytes(), original_bytes)
+        self.assertEqual(Path(second["backup"]).read_bytes(), first_saved_bytes)
         self.assertEqual(self.load()["heroes"][0]["items"][0]["enchants"][2]["value"], 2.3)
 
     def test_rejected_values_do_not_create_or_extend_enchant_data(self):

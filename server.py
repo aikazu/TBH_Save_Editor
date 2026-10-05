@@ -244,10 +244,10 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 if it["EnchantCount"] != before:
                     fixed += 1
             try:
-                State.save.save(State.path, backup=True)
+                backup = State.save.save(State.path, backup=True)
             except Exception as e:
                 return self._send(500, {"error": str(e)})
-            return self._send(200, {"ok": True, "path": State.path, "backup": State.path + ".bak", "fixed": fixed})
+            return self._send(200, {"ok": True, "path": State.path, "backup": backup, "fixed": fixed})
         return self._send(404, {"error": "Unknown route"})
 
 

@@ -10,6 +10,7 @@ import hmac
 import json
 import os
 import secrets
+from datetime import datetime
 from hashlib import pbkdf2_hmac
 
 # --- keys/constants (Taskbar Hero 1.00.17) ---
@@ -112,10 +113,29 @@ class SaveFile:
         return es3_encrypt(text.encode("utf-8"), self.password)
 
     def save(self, path, backup=True):
+        """Write the save; return the backup path created first, or None."""
         blob = self.to_es3_bytes()
-        if backup and os.path.exists(path):
-            with open(path, "rb") as s, open(path + ".bak", "wb") as d:
-                d.write(s.read())
+        backup_path = write_backup(path) if backup and os.path.exists(path) else None
         with open(path, "wb") as fh:
             fh.write(blob)
-        return path
+        return backup_path
+
+
+def write_backup(path):
+    """Copy the current save to a new timestamped .bak that is never overwritten.
+
+    A single fixed .bak would be replaced by the second save, destroying the
+    player's only copy of their original file.
+    """
+    with open(path, "rb") as src:
+        data = src.read()
+    stem = "%s.%s" % (path, datetime.now().strftime("%Y%m%d-%H%M%S"))
+    for n in range(1, 1000):
+        candidate = stem + (".bak" if n == 1 else "-%d.bak" % n)
+        try:
+            with open(candidate, "xb") as dst:
+                dst.write(data)
+            return candidate
+        except FileExistsError:
+            continue
+    raise OSError("Could not create a unique backup next to %s" % path)

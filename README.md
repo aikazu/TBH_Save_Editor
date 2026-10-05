@@ -24,7 +24,7 @@ save in the game; an in-game reload has not been verified for this update.
 > even one the game considers "legal" locally — can still get your account
 > **flagged or banned**.
 >
-> - **Always** keep the `.es3.bak` backup the app writes on every save.
+> - **Always** keep the dated `.es3.<YYYYMMDD-HHMMSS>.bak` backups the app writes on every save.
 > - **Close the game completely** before saving, or it overwrites your edits on exit.
 > - **Do not** use this on a save you cannot afford to lose.
 >
@@ -82,7 +82,7 @@ Opens `http://127.0.0.1:8765` in your browser. The save path is auto-filled.
 | 2 | Pick a **hero** | See equipped items (icon + name) |
 | 3 | Select equipped **equipment** | See Decoration, Engraving, and Inscription slots; unavailable grade slots stay locked |
 | 4 | **Add** or **Edit** a slot, then **Apply enchant** | Pick stat → tier → value; the validated edit is staged in memory |
-| 5 | **Review & save**, then **Save with backup** | Review before/after values and destination; create `.es3.bak`, recompute HMAC, and write `.es3` |
+| 5 | **Review & save**, then **Save with backup** | Review before/after values and destination; create a dated `.bak`, recompute HMAC, and write `.es3` |
 
 Clearing a filled slot and discarding staged changes both ask for confirmation.
 Advanced **Custom values** requires an explicit opt-in and skips the table's
@@ -139,7 +139,7 @@ https://github.com/user-attachments/assets/4e61598e-926d-49f5-abed-7a0fc7c2aab1
                                  ▼
         ┌──────────────────────────────────────────────────────────┐
         │  Recompute SystemInfo HMAC                                │
-        │  Re-encrypt with fresh IV → write .es3 (+ .es3.bak)       │
+        │  Re-encrypt with fresh IV → write .es3 (+ dated .bak)     │
         └──────────────────────────────────────────────────────────┘
 ```
 
@@ -298,6 +298,8 @@ Beyond that, modifying any save carries inherent risk:
   liable for corrupted saves, lost progress, banned accounts, or any other
   damage arising from the use of this tool.
 
-**Always back up your save.** The app writes a `.es3.bak` on every save — keep
-it, and ideally keep your own separate backup too. If anything goes wrong,
-restore the `.bak` and you are back to where you started.
+**Always back up your save.** Before every save the app copies the current
+file to a new `SaveFile_Live.es3.<YYYYMMDD-HHMMSS>.bak` next to it; earlier
+backups are never overwritten, so the oldest one is your original. Ideally keep
+your own separate backup too. If anything goes wrong, rename the backup you want
+back to `SaveFile_Live.es3`.

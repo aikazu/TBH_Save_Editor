@@ -382,7 +382,7 @@ saveEditor/
 | Module | Function | Purpose |
 |---|---|---|
 | `core/es3.py` | `es3_decrypt` / `es3_encrypt` | AES-CBC + PKCS7 |
-| `core/es3.py` | `SaveFile.save` | Serializes inner JSON, recomputes HMAC, re-encrypts, writes `.es3` + `.bak` |
+| `core/es3.py` | `SaveFile.save` | Serializes inner JSON, recomputes HMAC, re-encrypts, writes a dated `.bak` + `.es3`; returns the backup path |
 | `core/gamedata.py` | `GameData.base_key` | Resolve save instance → base model (for name/icon lookup) |
 | `core/gamedata.py` | `GameData.grade_id` / `grade_name` | ItemKey → EGradeType |
 | `core/gamedata.py` | `GameData.slot_allowed` | Whether the item's grade allows this slot |
@@ -475,7 +475,7 @@ singleton `State.save` + `State.path`.
 | GET | `/api/stat_first?item=<key>&slot=<i>` | — | `{slot, gearGroup, options:[…]}` — stat-first dropdown data |
 | POST | `/api/load` | `{path?}` | `{heroes, path, saveVersion, dataVersion}` — load + decrypt .es3 |
 | POST | `/api/set_enchant` | `{uniqueId, slot, materialKey, statModKey, tier, value, clear?, force?}` | full item payload with validation errors; `value` is in display units |
-| POST | `/api/save` | `{}` | `{ok, path, backup, fixed}` — recount + encrypt + write |
+| POST | `/api/save` | `{}` | `{ok, path, backup, fixed}` — recount + encrypt + write; `backup` is the new dated `.bak` path |
 
 ### `/api/set_enchant` validation chain
 
@@ -495,7 +495,7 @@ their own confirmation dialogs.
 ### `/api/save` flow
 
 1. Loop over **all** `itemSaveDatas` and call `recount_enchants()` — counts any items whose `EnchantCount` was fixed
-2. `SaveFile.save(path, backup=True)` — serializes + HMAC + encrypt + write `.bak` + write `.es3`
+2. `SaveFile.save(path, backup=True)` — serializes + HMAC + encrypt; copy the current file to a new `<path>.<YYYYMMDD-HHMMSS>.bak` (never overwriting an earlier backup) + write `.es3`
 3. Return `{ok, path, backup, fixed}` so the UI can surface "X counter(s) repaired"
 
 Saving repairs counters but does not revalidate every existing enchant against

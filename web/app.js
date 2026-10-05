@@ -367,14 +367,17 @@ async function reviewSave() {
     if (change.after.errors?.length) entry.append(el("p", "field-error", change.after.errors.join(". ")));
     body.append(entry);
   });
-  const path = el("div", "review-path"); path.append(el("strong", "", "Write to"), document.createTextNode(STATE.path)); body.append(path);
-  if (!await confirmAction({ title: "Review your changes", eyebrow: `${STATE.changes.size} staged ${STATE.changes.size === 1 ? "slot" : "slots"}`, description: "Close the game before saving. The current file will be backed up to .es3.bak before your changes are written.", accept: "Save with backup", cancel: "Keep editing", body })) return;
+  const risk = el("div", "review-risk");
+  const custom = [...STATE.changes.values()].some((change) => change.custom);
+  risk.append(el("strong", "", "Checked on your device only"), el("span", "", `${custom ? "Some values are outside the game's tables and are more likely to be rejected." : "These values match the game's tables."} The game also validates some items on its servers. It may reject edited items or flag your account.`));
+  const path = el("div", "review-path"); path.append(el("strong", "", "Write to"), document.createTextNode(STATE.path)); body.append(risk, path);
+  if (!await confirmAction({ title: "Review your changes", eyebrow: `${STATE.changes.size} staged ${STATE.changes.size === 1 ? "slot" : "slots"}`, description: "Close the game before saving. Your current file is first copied to a new dated .bak file next to it; earlier backups are kept.", accept: "Save with backup", cancel: "Keep editing", body })) return;
   await busy($("#btnSave"), "Saving…", async () => {
     notice("Writing your save and creating a backup…");
     try {
       const result = await api("POST", "/api/save", {});
       STATE.changes.clear(); renderItems(); renderEnchants();
-      notice(`Saved. Backup: ${result.backup}${result.fixed ? ` · ${result.fixed} enchant counters repaired.` : ""}`, "success");
+      notice(`Saved. Your previous file is backed up at ${result.backup}${result.fixed ? ` · ${result.fixed} enchant counters repaired.` : ""}`, "success");
     } catch (error) { notice(error.message, "error"); }
   });
 }

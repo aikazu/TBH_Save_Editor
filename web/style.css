@@ -159,6 +159,8 @@ dialog h2 { font-size: 1.8rem; line-height: 1.2; margin-bottom: .75rem; }
 .review-values { display: grid; gap: .45rem; font-size: .8125rem; }
 .review-values span { display: block; color: var(--muted); font-size: .7rem; margin-bottom: .15rem; }
 .review-after { color: var(--amber); }
+.review-risk { display: grid; gap: .2rem; margin-top: 1rem; padding: .85rem; border: 1px solid var(--line); border-radius: 5px; font-size: .8125rem; }
+.review-risk span { color: var(--muted); }
 .review-path { background: var(--canvas); padding: .85rem; font-size: .75rem; border-radius: 5px; margin-top: 1rem; }
 .review-path strong { display: block; color: var(--muted); margin-bottom: .3rem; }
 @media (max-width: 1099px) {
