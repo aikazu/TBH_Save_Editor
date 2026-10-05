@@ -6,7 +6,7 @@ const el = (tag, className, text) => {
   if (text != null) node.textContent = text;
   return node;
 };
-const STATE = { heroes: [], hero: null, item: null, loaded: false, busy: false, path: "", changes: new Map(), editorToken: 0 };
+const STATE = { heroes: [], hero: null, item: null, loaded: false, saved: false, busy: false, path: "", changes: new Map(), editorToken: 0 };
 const format = (value) => Number(value).toLocaleString("en-US", { maximumFractionDigits: 8 });
 const titleCase = (value) => value ? value[0] + value.slice(1).toLowerCase() : "Unknown";
 const changeKey = (uid, slot) => `${uid}:${slot}`;
@@ -30,7 +30,7 @@ function notice(message, kind = "") {
 }
 function renderStatus() {
   const count = STATE.changes.size;
-  $("#dirtyText").textContent = count ? `${count} unsaved ${count === 1 ? "slot" : "slots"}` : STATE.loaded ? "All changes saved" : "No save loaded";
+  $("#dirtyText").textContent = count ? `${count} unsaved ${count === 1 ? "slot" : "slots"}` : !STATE.loaded ? "No save loaded" : STATE.saved ? "All changes saved" : "No changes yet";
   $("#dirtyText").className = count ? "dirty" : "";
   $("#btnSave").disabled = !count || STATE.busy;
   $("#btnSave").textContent = count ? `Review & save (${count})` : "Review & save";
@@ -103,6 +103,7 @@ async function loadSave() {
       STATE.heroes = data.heroes;
       STATE.path = data.path;
       STATE.loaded = true;
+      STATE.saved = false;
       STATE.changes.clear();
       STATE.hero = data.heroes.findIndex((hero) => hero.items.length);
       if (STATE.hero < 0) STATE.hero = data.heroes.length ? 0 : null;
@@ -114,7 +115,7 @@ async function loadSave() {
       $("#versionWarning").hidden = data.dataVersion === data.saveVersion;
       $("#versionWarning").textContent = `This save is version ${data.saveVersion}; the editor tables are ${data.dataVersion}. Enchant options may differ.`;
       renderHeroes(); renderItems(); renderEnchants();
-      notice(`Loaded ${data.heroes.length} heroes. Select equipment to begin.`, "success");
+      notice("");
     } catch (error) { notice(error.message, "error"); }
   });
 }
@@ -178,11 +179,19 @@ function renderEnchants() {
   closeEditor();
   const item = STATE.item;
   $("#enchBody").replaceChildren();
-  $("#enchEmpty").hidden = !!item;
+  $("#enchEmpty").hidden = !!item || STATE.loaded;
   $("#selectedItem").hidden = !item;
   $("#advanced").hidden = !item;
   $("#slotCount").textContent = item ? `${item.enchants.filter((slot) => slot.allowed && slot.filled).length} / ${item.enchants.filter((slot) => slot.allowed).length} filled` : "";
-  if (!item) return;
+  if (!item) {
+    const hero = STATE.heroes[STATE.hero];
+    if (!STATE.loaded || !hero) return;
+    const state = el("div", "empty-state");
+    $("#enchBody").append(state);
+    return hero.items.length
+      ? empty(state, "Choose equipment", "Select an item from the equipment list to see and edit its enchantments.")
+      : empty(state, "Nothing to enchant", "Pick a hero with equipped items to edit enchantments.");
+  }
   const detail = el("div");
   detail.append(el("span", "selected-caption", `${STATE.heroes[STATE.hero].name}'s equipment`), el("h3", "", item.name));
   const meta = el("div", "item-meta"); meta.append(grade(item), el("span", "", titleCase(item.group))); detail.append(meta);
@@ -209,12 +218,7 @@ function slotRow(slot) {
   summary.append(copy);
   if (slot.filled) summary.append(el("span", "slot-value", `${format(slot.value)}${slot.isPercent ? "%" : ""}`));
   row.append(summary);
-  if (slot.errors?.length) {
-    // Validation messages quote raw save integers, which differ from the scaled value shown above.
-    const problem = el("div", "slot-error", "This roll doesn't match the game tables.");
-    problem.append(el("span", "", `Raw save value: ${slot.errors.join(". ")}`));
-    row.append(problem);
-  }
+  if (slot.errors?.length) row.append(slotProblem(slot));
   if (changed) row.append(el("span", "edited-label", "Staged change"));
   if (slot.allowed || slot.filled) {
     const actions = el("div", "slot-actions");
@@ -240,6 +244,28 @@ function slotRow(slot) {
     row.append(actions);
   }
   return row;
+}
+
+function slotProblem(slot) {
+  const problem = el("div", "slot-error");
+  const range = slot.range;
+  const suffix = slot.isPercent ? "%" : "";
+  const outside = range && (slot.value < range.min || slot.value > range.max);
+  problem.append(el("p", "", outside
+    ? `${format(slot.value)}${suffix} is outside Tier ${slot.tier}'s range (${format(range.min)}${suffix} to ${format(range.max)}${suffix}). The game may reject this roll.`
+    : "This roll doesn't match the game's tables. The game may reject it."));
+  // Server messages quote raw save integers; keep them for diagnosis without leading with them.
+  const detail = el("details", "raw-detail");
+  detail.append(el("summary", "", "Technical detail"), el("p", "", `Raw save check: ${slot.errors.join(". ")}`));
+  problem.append(detail);
+  if (slot.allowed && slot.identityValid && range) {
+    const fix = el("button", "secondary", `Set to ${format(range.max)}${suffix}`);
+    fix.type = "button";
+    fix.setAttribute("aria-label", `Set ${slot.stat} to the tier maximum, ${format(range.max)}${suffix}`);
+    fix.onclick = () => setEnchant({ uniqueId: STATE.item.uniqueId, slot: slot.slot, materialKey: slot.materialKey, statModKey: slot.statModKey, tier: slot.tier, value: range.max }, fix);
+    problem.append(fix);
+  }
+  return problem;
 }
 
 async function openEditor(row, current, trigger) {
@@ -343,7 +369,7 @@ async function setEnchant(payload, button, errorNode) {
       STATE.changes.set(key, { uid: item.uniqueId, hero: heroName, itemName: item.name, label: `${updated.label} ${payload.slot % 2 + 1}`, before: STATE.changes.get(key)?.before || original, after: updated, custom: !!payload.force });
       STATE.heroes.forEach((hero) => { hero.items = hero.items.map((entry) => entry.uniqueId === item.uniqueId ? item : entry); });
       STATE.item = item; renderItems(); renderEnchants();
-      notice(payload.clear ? "Enchantment cleared. Review and save when ready." : "Enchantment staged. Review and save when ready.", "success");
+      notice("");
     } catch (error) {
       if (errorNode) errorNode.textContent = error.message;
       notice(error.message, "error");
@@ -352,7 +378,7 @@ async function setEnchant(payload, button, errorNode) {
   if (applied) $(`[data-edit-slot="${payload.slot}"]`)?.focus({ preventScroll: true });
   else if (errorNode) $("#editValue")?.focus({ preventScroll: true });
 }
-function describeSlot(slot) { return slot.filled ? `${slot.stat} · T${slot.tier} · ${format(slot.value)}${slot.isPercent ? "%" : ""} · ${slot.materialName}` : "Empty slot"; }
+function describeSlot(slot) { return slot.filled ? `${slot.stat}: ${format(slot.value)}${slot.isPercent ? "%" : ""} · Tier ${slot.tier} · ${slot.materialName}` : "Empty slot"; }
 async function reviewSave() {
   if (STATE.busy || !STATE.changes.size) return;
   const body = el("div");
@@ -376,7 +402,7 @@ async function reviewSave() {
     notice("Writing your save and creating a backup…");
     try {
       const result = await api("POST", "/api/save", {});
-      STATE.changes.clear(); renderItems(); renderEnchants();
+      STATE.changes.clear(); STATE.saved = true; renderItems(); renderEnchants();
       notice(`Saved. Your previous file is backed up at ${result.backup}${result.fixed ? ` · ${result.fixed} enchant counters repaired.` : ""}`, "success");
     } catch (error) { notice(error.message, "error"); }
   });

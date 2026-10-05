@@ -203,6 +203,8 @@ class ServerTests(unittest.TestCase):
         self.assertTrue(enchant["identityValid"])
         self.assertEqual(len(enchant["errors"]), 1)
         self.assertIn("outside range", enchant["errors"][0])
+        # Range is reported in display units (raw /10 for this stat), matching "value".
+        self.assertEqual(enchant["range"], {"min": 2.2, "max": 2.6, "interval": 0.1})
         before = copy.deepcopy(server.State.save.player)
         self.assertEqual(before["itemSaveDatas"][0]["EnchantData"][2]["Value"], 99)
         status, error = self.request("POST", "/api/set_enchant",

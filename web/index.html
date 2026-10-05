@@ -12,7 +12,7 @@
   <a class="skip-link" href="#enchPane">Skip to enchantments</a>
   <header class="app-header">
     <div class="identity"><span class="wordmark">TBH</span><div><h1>Enchantment workbench</h1><p>Task Bar Hero save editor</p></div></div>
-    <div class="header-meta"><span id="versionLabel">Reading game tables…</span><span class="local-label">On your device</span></div>
+    <div class="header-meta"><span id="versionLabel">Reading game tables…</span><span class="local-label">Runs on your device · no upload</span></div>
   </header>
   <section class="save-strip" aria-label="Save file">
     <form id="loadForm" action="/api/load" method="post">
@@ -28,7 +28,7 @@
       <div class="pane-heading"><h2 id="heroTitle"><span class="step">01</span> Heroes</h2><span id="heroCount" class="count"></span></div>
       <div id="heroList" class="hero-list"></div>
       <div id="heroEmpty" class="small-empty">Your heroes appear here after loading a save.</div>
-      <div class="rail-note"><p>Make it your build.</p><span>Choose a hero, select their equipment, then tune each enchant.</span></div>
+      <div class="rail-note"><p>Nothing is written until you review.</p><span>Choose a hero and an item, then edit its enchants. Changes stay staged until you save.</span></div>
     </aside>
     <section id="itemPane" class="equipment-pane" aria-labelledby="itemTitle">
       <div class="pane-heading"><h2 id="itemTitle"><span class="step">02</span> Equipment</h2><span id="itemCount" class="count"></span></div>
@@ -43,8 +43,8 @@
       <div id="enchBody"></div>
       <div id="enchEmpty" class="welcome">
         <div class="welcome-art" aria-hidden="true"><img src="/icons/110001" alt="" width="72" height="72"><img src="/icons/120001" alt="" width="72" height="72"><img src="/icons/130001" alt="" width="72" height="72"></div>
-        <h3>A better roll starts here.</h3><p>Load a save and choose an equipped item to edit its decorations, engravings, and inscriptions.</p>
-        <div class="welcome-note"><strong>Your file stays local.</strong><span>Changes are staged until you review and save. A backup is created when you write.</span></div>
+        <h3>Load a save to begin.</h3><p>Choose a hero and one of their equipped items, then add, edit, or clear its decorations, engravings, and inscriptions. Normal edits are limited to values in the game&#39;s tables.</p>
+        <div class="welcome-note"><strong>Your file stays on this computer.</strong><span>Changes are staged until you review and save, and a dated backup is made before each write. Close the game before saving.</span></div>
       </div>
       <details id="advanced" class="advanced" hidden><summary>Advanced editing</summary><label class="checkbox-row"><input id="cbCustom" name="custom" type="checkbox"><span>Custom values</span></label><p>Allow values outside the game tables. Custom rolls may be rejected by the game.</p></details>
     </section>

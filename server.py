@@ -63,7 +63,11 @@ def item_payload(it):
                 "tier": ed.get("Tier"),
                 "value": GD.to_display(ed.get("Value", 0), stt, mtp),
                 "isPercent": is_pct,
-                "stat": GD.pretty_stat(stt) if si else "Unknown stat",
+                # Same label as the editor's stat list, so FLAT and % variants read alike in both places.
+                "stat": GD._labeled_stat(stt, mtp) if si else "Unknown stat",
+                # Tier bounds in display units, so the UI never has to explain raw save integers.
+                "range": {k: GD.to_display(si[f], stt, mtp) for k, f in
+                          (("min", "MinValue"), ("max", "MaxValue"), ("interval", "Interval"))} if si else None,
                 "statType": stt,
                 "modType": mtp,
                 "errors": GD.validate_enchant(i, ikey, ed),
