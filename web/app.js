@@ -35,6 +35,7 @@ function renderStatus() {
   $("#btnSave").disabled = !count || STATE.busy;
   $("#btnSave").textContent = count ? `Review & save (${count})` : "Review & save";
   $("#btnSave").hidden = !STATE.loaded;
+  $("#customChip").hidden = !$("#cbCustom").checked;
   $("#btnDiscard").hidden = !count;
   $("#btnDiscard").disabled = STATE.busy;
 }
@@ -101,7 +102,6 @@ async function loadSave(confirmed = false) {
   if (STATE.busy) return false;
   if (STATE.changes.size && !confirmed && !await confirmAction({ title: "Discard staged changes?", description: "Loading a save replaces the unsaved changes in this workbench. Your file has not been changed.", accept: "Discard & load", cancel: "Keep editing", danger: true })) return false;
   return busy($("#btnLoad"), "Loading…", async () => {
-    notice("Reading and decrypting your save…");
     try {
       const data = await api("POST", "/api/load", { path: $("#savePath").value.trim() });
       closeEditor();
@@ -159,6 +159,7 @@ function renderHeroes() {
     const copy = el("span");
     copy.append(el("strong", "", hero.name), el("small", "", `Level ${hero.level}`));
     button.append(copy, el("span", "hero-index", `${hero.items.length} gear`));
+    button.setAttribute("aria-label", `${hero.name}, level ${hero.level}, ${hero.items.length} equipped ${hero.items.length === 1 ? "item" : "items"}`);
     button.onclick = () => {
       if (STATE.busy) return;
       closeEditor(); STATE.hero = index; STATE.item = hero.items[0] || null;
@@ -221,7 +222,9 @@ function renderEnchants() {
     const state = el("div", "empty-state");
     $("#enchBody").append(state);
     return hero.items.length
-      ? empty(state, "Choose equipment", "Select an item from the equipment list to see and edit its enchantments.")
+      ? $("#itemSearch").value.trim()
+        ? empty(state, "No item selected", "Clear or change the search to pick equipment.")
+        : empty(state, "Choose equipment", "Select an item from the equipment list to see and edit its enchantments.")
       : empty(state, "Nothing to enchant", "Pick a hero with equipped items to edit enchantments.");
   }
   const detail = el("div");
@@ -260,11 +263,9 @@ function slotRow(slot) {
   row.append(summary);
   if (slot.errors?.length) row.append(slotProblem(slot));
   if (changed) row.append(el("span", "edited-label", "Staged change"));
-  const before = changed && STATE.changes.get(changeKey(STATE.item.uniqueId, slot.slot)).before;
-  const revertible = changed && (!before.filled || before.identityValid);
-  if (slot.allowed || slot.filled || revertible) {
+  if (slot.allowed || slot.filled || changed) {
     const actions = el("div", "slot-actions");
-    if (revertible) {
+    if (changed) {
       const revert = el("button", "quiet", "Revert");
       revert.type = "button"; revert.setAttribute("aria-label", `Revert ${slot.label.toLowerCase()} ${slot.slot % 2 + 1} to its loaded value`);
       revert.onclick = () => revertSlot(slot, revert);
@@ -299,9 +300,12 @@ function slotProblem(slot) {
   const range = slot.range;
   const suffix = slot.isPercent ? "%" : "";
   const outside = range && (slot.value < range.min || slot.value > range.max);
+  // Unstaged problems came with the save file; say so, so the player doesn't think they caused it.
+  const loaded = !STATE.changes.has(changeKey(STATE.item.uniqueId, slot.slot));
+  const bounds = range && `Tier ${slot.tier}'s range (${format(range.min)}${suffix} to ${format(range.max)}${suffix})`;
   problem.append(el("p", "", outside
-    ? `${format(slot.value)}${suffix} is outside Tier ${slot.tier}'s range (${format(range.min)}${suffix} to ${format(range.max)}${suffix}). The game may reject this roll.`
-    : "This roll doesn't match the game's tables. The game may reject it."));
+    ? `${loaded ? "Your save already has" : "This value is"} ${format(slot.value)}${suffix}, outside ${bounds}. The game may reject this roll.`
+    : `${loaded ? "This roll in your save doesn't" : "This roll doesn't"} match the game's tables. The game may reject it.`));
   // Server messages quote raw save integers; keep them for diagnosis without leading with them.
   const detail = el("details", "raw-detail");
   detail.append(el("summary", "", "Technical detail"), el("p", "", `Raw save check: ${slot.errors.join(". ")}`));
@@ -354,14 +358,14 @@ async function openEditor(row, current, trigger) {
   if (!custom) valueControls.append(max);
   valueField.append(valueLabel, valueControls); fields.append(valueField);
   const actions = el("div", "editor-actions"); const cancel = el("button", "quiet", "Cancel"); cancel.type = "button";
-  const apply = el("button", "primary", "Apply enchant"); apply.type = "submit";
+  const apply = el("button", custom ? "danger-action" : "primary", "Apply enchant"); apply.type = "submit";
   actions.append(cancel, apply); form.append(heading, fields, hint, error, actions);
   const currentIndex = options.findIndex((option) => option.tiers.some((candidate) => candidate.statModKey === current.statModKey));
   const selection = () => { const option = options[stat.value]; return { option, chosen: option?.tiers.find((candidate) => String(candidate.tier) === tier.value) }; };
   function updateTier(keepCurrent = false) {
     const { option, chosen } = selection();
     const active = !!chosen;
-    number.disabled = range.disabled = max.disabled = !active;
+    number.disabled = range.disabled = max.disabled = apply.disabled = !active;
     range.style.visibility = active ? "" : "hidden";
     error.textContent = ""; number.removeAttribute("aria-invalid");
     if (!active) { number.value = ""; hint.textContent = "Choose a stat to see its available tiers and values."; return; }
@@ -411,6 +415,7 @@ async function openEditor(row, current, trigger) {
   updateStat(true);
   if (!options.length) { stat.disabled = true; apply.disabled = true; hint.textContent = "No enchant options are available for this item."; }
   stat.focus({ preventScroll: true });
+  form.scrollIntoView({ block: "nearest" });
 }
 // Records a server-applied edit; returns false when the slot came back unchanged.
 function recordChange(item, slot, original, custom) {
@@ -443,7 +448,7 @@ async function setEnchant(payload, button, errorNode) {
   else if (errorNode) $("#editValue")?.focus({ preventScroll: true });
 }
 function maxableSlots(item) {
-  return item.enchants.filter((slot) => slot.filled && slot.allowed && slot.identityValid && slot.range && slot.value !== slot.range.max);
+  return item.enchants.filter((slot) => slot.filled && slot.allowed && slot.identityValid && !slot.errors?.length && slot.range && slot.value !== slot.range.max);
 }
 async function maxAll(button) {
   const slots = maxableSlots(STATE.item);
@@ -461,12 +466,19 @@ async function maxAll(button) {
   });
 }
 async function revertSlot(slot, button) {
-  const before = STATE.changes.get(changeKey(STATE.item.uniqueId, slot.slot)).before;
-  // A roll that was already outside the tables can only be restored as a custom value.
-  const restore = before.filled
-    ? { materialKey: before.materialKey, statModKey: before.statModKey, tier: before.tier, value: before.value, force: !!before.errors?.length }
-    : { clear: true };
-  await setEnchant({ uniqueId: STATE.item.uniqueId, slot: slot.slot, ...restore }, button);
+  const uid = STATE.item.uniqueId;
+  let reverted = false;
+  await busy(button, "Reverting…", async () => {
+    try {
+      // The server restores the slot and its applied-enchant counter, so nothing is left to save.
+      const item = await api("POST", "/api/revert", { uniqueId: uid, slot: slot.slot });
+      STATE.changes.delete(changeKey(uid, slot.slot));
+      STATE.heroes.forEach((hero) => { hero.items = hero.items.map((entry) => entry.uniqueId === uid ? item : entry); });
+      STATE.item = item; reverted = true;
+      renderItems(); renderEnchants(); notice("");
+    } catch (error) { notice(error.message, "error"); }
+  });
+  if (reverted) $(`[data-edit-slot="${slot.slot}"]`)?.focus({ preventScroll: true });
 }
 async function discardAll() {
   if (STATE.busy || !STATE.changes.size) return;
@@ -480,7 +492,7 @@ async function discardAll() {
   renderHeroes(); renderItems(); renderEnchants();
   notice("Staged changes discarded. The save was reloaded from disk.", "success");
 }
-function describeSlot(slot) { return slot.filled ? `${slot.stat}: ${format(slot.value)}${slot.isPercent ? "%" : ""} · Tier ${slot.tier} · ${slot.materialName}` : "Empty slot"; }
+function describeSlot(slot) { return slot.filled ? `${slot.stat}: ${format(slot.value)}${slot.isPercent ? "%" : ""} · Tier ${slot.tier} · ${slot.materialName}${slot.errors?.length ? " · outside the game's tables" : ""}` : "Empty slot"; }
 async function reviewSave() {
   if (STATE.busy || !STATE.changes.size) return;
   const body = el("div");
@@ -492,7 +504,6 @@ async function reviewSave() {
     const after = el("div", "review-after"); after.append(el("span", "", "After"), document.createTextNode(describeSlot(change.after)));
     values.append(before, after); entry.append(values);
     if (JSON.stringify(change.before) === JSON.stringify(change.after)) entry.append(el("p", "muted", "The roll is restored; its applied-enchant counter still records these edits."));
-    if (change.after.errors?.length) entry.append(el("p", "field-error", change.after.errors.join(". ")));
     body.append(entry);
   });
   const risk = el("div", "review-risk");
@@ -501,7 +512,6 @@ async function reviewSave() {
   const path = el("div", "review-path"); path.append(el("strong", "", "Write to"), document.createTextNode(STATE.path)); body.append(risk, path);
   if (!await confirmAction({ title: "Review your changes", eyebrow: `${STATE.changes.size} staged ${STATE.changes.size === 1 ? "slot" : "slots"}`, description: "Close the game before saving. Your current file is first copied to a new dated .bak file next to it. The oldest backup and the two newest are kept.", accept: "Save with backup", cancel: "Keep editing", body })) return;
   await busy($("#btnSave"), "Saving…", async () => {
-    notice("Writing your save and creating a backup…");
     try {
       const result = await api("POST", "/api/save", {});
       STATE.changes.clear(); STATE.saved = true; renderItems(); renderEnchants();
@@ -512,11 +522,12 @@ async function reviewSave() {
 $("#loadForm").onsubmit = (event) => { event.preventDefault(); loadSave(); };
 $("#btnSave").onclick = reviewSave;
 $("#btnDiscard").onclick = discardAll;
+$("#btnCustomOff").onclick = () => { $("#cbCustom").checked = false; renderStatus(); renderEnchants(); };
 $("#itemSearch").oninput = renderItems;
 $("#cbCustom").onchange = async (event) => {
   const checkbox = event.target;
   if (checkbox.checked) checkbox.checked = await confirmAction({ title: "Allow custom values?", description: "Custom values skip range validation. The game may reject these rolls. Your save is only written after review and confirmation.", accept: "Enable custom values", cancel: "Use game-table values", eyebrow: "Advanced editing", danger: true });
-  renderEnchants();
+  renderStatus(); renderEnchants();
 };
 window.addEventListener("beforeunload", (event) => { if (STATE.changes.size) { event.preventDefault(); event.returnValue = ""; } });
 async function boot() {

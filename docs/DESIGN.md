@@ -158,7 +158,7 @@ The bench is honest. Validation problems, custom values, and the save path are s
 A warm, low-chroma charcoal bench with one amber lamp and a set of pale grade tints borrowed from the game.
 
 ### Primary
-- **Lamp Amber**: selection borders, the selected hero's name, staged values, the primary action, caret, and slider fill. Text on amber uses **Amber Ink**. Focus rings are Parchment Text, never amber, so focus and selection stay distinguishable.
+- **Lamp Amber**: selection borders and fills, the primary action, caret, and slider fill. Text on amber uses **Amber Ink**. Focus rings are Parchment Text, never amber, so focus and selection stay distinguishable.
 - **Bright Amber**: hover state of the primary action only.
 - **Amber Wash**: fill behind a selected hero or item tile, so selection reads even without the border.
 
@@ -243,8 +243,8 @@ Precise and quiet.
 
 ### Selection tiles (heroes and equipment)
 - **Idle:** Bench Surface fill with a hairline border.
-- **Selected:** Amber Wash fill and an amber border, with `aria-pressed="true"`; the hero name turns amber.
-- **Content:** item icon (48px), name, then a caption row of grade tint and gear group. An "Edited" marker in amber appears when the item has staged changes.
+- **Selected:** Amber Wash fill and an amber border, with `aria-pressed="true"`.
+- **Content:** item icon (48px), name, then a caption row of grade tint and gear group. An "Edited" marker (parchment dot and label) appears when the item has staged changes.
 - **Keyboard:** each list is one Tab stop; arrow keys, Home, and End move between tiles.
 
 ### Inputs / Fields
@@ -254,21 +254,21 @@ Precise and quiet.
 - **Checkbox and range:** native controls tinted with `accent-color` amber.
 
 ### Enchant slot (signature)
-The working row of the bench: a 36px material icon or slot marker, stat name and "material · tier" detail, the value in Bahnschrift tabular figures, and Revert/Edit/Clear on the right. A staged slot's value turns amber with a "Staged change" marker and gains Revert. Validation problems show in coral in display units with the tier's range, keep the raw check under a "Technical detail" disclosure, and offer a "Set to <max>" fix. The selected item's header offers "Max N rolls" when filled enchants sit below their tier maximum.
+The working row of the bench: a 36px material icon or slot marker, stat name and "material · tier" detail, the value in Bahnschrift tabular figures, and Revert/Edit/Clear on the right. A staged slot's value gains a parchment underline and a "Staged change" dot marker, plus Revert, which restores the slot and its applied counter to the last loaded or saved state and unstages it. Validation problems show in coral in display units with the tier's range ("Your save already has…" when the problem came with the file), keep the raw check under a "Technical detail" disclosure, and offer a "Set to <max>" fix. The selected item's header offers "Max N rolls" when filled enchants sit below their tier maximum.
 
 ### Inline slot editor
-Opens beneath its slot on a Bench Surface panel with a Control Edge border. Stat and tier selects, then value with slider (hidden until a stat is chosen, named after the stat), number field, and Max. A mode label states "Game-table values" or, in amber, "Custom values". The range hint lists min, max, and step in display units; invalid input is reported in the editor's alert line, not a browser tooltip. Escape or Cancel closes it and returns focus to the trigger.
+Opens beneath its slot on a Bench Surface panel with a Control Edge border. Stat and tier selects, then value with slider (hidden until a stat is chosen, named after the stat), number field, and Max. A mode label states "Game-table values" or, in coral, "Custom values"; in custom mode Apply uses the danger style. Apply stays disabled until a stat is chosen, and the editor scrolls itself into view. The range hint lists min, max, and step in display units; invalid input is reported in the editor's alert line, not a browser tooltip. Escape or Cancel closes it and returns focus to the trigger.
 
 ### Review dialog
-A native `<dialog>` on Bench Surface with a lifted shadow. It lists each staged slot with labeled Before and After values (After in amber), a hairline-bordered "Checked on your device only" note about server-side validation, then the exact path that will be written in a canvas-colored well. Actions: "Keep editing" (secondary, receives initial focus) and "Save with backup" (primary); Escape also cancels.
+A native `<dialog>` on Bench Surface with a lifted shadow. It lists each staged slot with labeled Before and After values (After in semibold; values outside the tables are flagged in words), a hairline-bordered "Checked on your device only" note about server-side validation, then the exact path that will be written in a canvas-colored well. Actions: "Keep editing" (secondary, receives initial focus) and "Save with backup" (primary); Escape also cancels.
 
 ### Notices
-Full-width bordered strips under the save strip, with role="status", used only for results that need to persist: save (with the backup path), discard, and errors. Routine feedback such as loading or staging lives in the status text beside "Review & save" instead. Success uses Success Sage text; errors use Danger Coral text and border; the version mismatch warning uses amber text.
+Full-width bordered strips under the save strip, with role="status", used only for results that need to persist: save (with the backup path), discard, and errors. Routine feedback such as loading or staging lives in the status text and button labels instead. When custom values are enabled, a coral-outlined "Custom values on · Turn off" chip sits beside the status so the mode is never silent. Success uses Success Sage text; errors use Danger Coral text and border; the version mismatch warning uses amber text.
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** reserve Lamp Amber for the current selection, staged values, and the one primary action in view.
+- **Do** reserve Lamp Amber for the current selection and the one primary action in view. Staged edits are marked in parchment (a dot or an underline), never amber.
 - **Do** keep every control at least 44px tall with a visible 3px parchment focus ring.
 - **Do** use the game's extracted icons for items and materials, sized 36px in slots, 48px in tiles, and 88px for the selected item.
 - **Do** show table version and save version separately, and keep the full save path visible in the footer and review dialog.

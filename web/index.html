@@ -19,7 +19,7 @@
       <div class="path-field"><label for="savePath">Save file</label><input id="savePath" name="path" type="text" placeholder="Path to SaveFile_Live.es3" spellcheck="false" autocomplete="off" required></div>
       <button id="btnLoad" class="secondary" type="submit">Load save</button>
     </form>
-    <div class="save-actions"><span id="dirtyText" role="status">No save loaded</span><button id="btnDiscard" class="quiet" type="button" hidden>Discard</button><button id="btnSave" class="primary" type="button" disabled>Review &amp; save</button></div>
+    <div class="save-actions"><span id="dirtyText" role="status">No save loaded</span><span id="customChip" class="custom-chip" hidden>Custom values on <button id="btnCustomOff" type="button" class="quiet">Turn off</button></span><button id="btnDiscard" class="quiet" type="button" hidden>Discard</button><button id="btnSave" class="primary" type="button" disabled>Review &amp; save</button></div>
   </section>
   <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
   <p id="versionWarning" class="version-warning" hidden></p>
@@ -44,7 +44,7 @@
       <div id="enchEmpty" class="welcome">
         <div class="welcome-art" aria-hidden="true"><img src="/icons/110001" alt="" width="72" height="72"><img src="/icons/120001" alt="" width="72" height="72"><img src="/icons/130001" alt="" width="72" height="72"></div>
         <h3>Load a save to begin.</h3><p>Choose a hero and one of their equipped items, then add, edit, or clear its decorations, engravings, and inscriptions. Normal edits are limited to values in the game&#39;s tables.</p>
-        <div class="welcome-note"><strong>Your file stays on this computer.</strong><span>Changes are staged until you review and save, and a dated backup is made before each write. Close the game before saving.</span></div>
+        <div class="welcome-note"><strong>Your file stays on this computer.</strong><span>Changes are staged until you review and save, and a dated backup is made before each write.</span></div>
       </div>
       <details id="advanced" class="advanced" hidden><summary>Advanced editing</summary><label class="checkbox-row"><input id="cbCustom" name="custom" type="checkbox"><span>Custom values</span></label><p>Allow values outside the game tables. Custom rolls may be rejected by the game.</p></details>
     </section>
