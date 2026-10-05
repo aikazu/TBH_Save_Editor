@@ -18,6 +18,7 @@ colors:
   placeholder: "#a4ab9a"
   success-sage: "#b4dca0"
   danger-coral: "#ffb0a5"
+  danger-wash: "#3a2522"
   grade-legendary: "#efc377"
   grade-immortal: "#d8b8ef"
   grade-arcana: "#efb7c9"
@@ -96,6 +97,14 @@ components:
     height: "44px"
   button-secondary-hover:
     backgroundColor: "{colors.bench-raised}"
+  button-danger:
+    backgroundColor: "transparent"
+    textColor: "{colors.danger-coral}"
+    rounded: "{rounded.control}"
+    padding: "0.65rem 1rem"
+    height: "44px"
+  button-danger-hover:
+    backgroundColor: "{colors.danger-wash}"
   button-quiet:
     backgroundColor: "transparent"
     textColor: "{colors.sage-muted}"
@@ -149,7 +158,7 @@ The bench is honest. Validation problems, custom values, and the save path are s
 A warm, low-chroma charcoal bench with one amber lamp and a set of pale grade tints borrowed from the game.
 
 ### Primary
-- **Lamp Amber**: selection borders, the selected hero's name, staged values, the primary action, focus rings, caret, and slider fill. Text on amber uses **Amber Ink**.
+- **Lamp Amber**: selection borders, the selected hero's name, staged values, the primary action, caret, and slider fill. Text on amber uses **Amber Ink**. Focus rings are Parchment Text, never amber, so focus and selection stay distinguishable.
 - **Bright Amber**: hover state of the primary action only.
 - **Amber Wash**: fill behind a selected hero or item tile, so selection reads even without the border.
 
@@ -164,8 +173,8 @@ A warm, low-chroma charcoal bench with one amber lamp and a set of pale grade ti
 - **Sage Muted**: secondary text, counts, captions, and quiet buttons.
 
 ### Semantic
-- **Success Sage**: success notices and the "On your device" label.
-- **Danger Coral**: error notices, invalid fields, and slot validation problems.
+- **Success Sage**: success notices (save and discard results).
+- **Danger Coral**: error notices, invalid fields, slot validation problems, and the outline of risky confirmations. **Danger Wash** is their hover fill.
 - **Grade tints** (Legendary, Immortal, Arcana, Beyond, Celestial/Rare, Divine/Cosmic, Uncommon): the item's rarity label only. Common gear uses Sage Muted.
 
 ### Named Rules
@@ -229,12 +238,14 @@ Precise and quiet.
 - **Primary disabled:** transparent with a hairline border and muted text, never a dimmed amber.
 - **Secondary:** transparent with a Control Edge border; hover fills with Bench Raised, active with Bench Pressed.
 - **Quiet:** borderless, muted text that brightens on hover; used for Clear, Cancel, and Close.
-- **Focus:** a 3px amber outline offset by 4px, on every focusable element.
+- **Danger:** transparent with a Danger Coral border and text, for confirmations that discard staged work, clear an enchant, or enable custom values. The safe choice beside it is never outranked by an amber button.
+- **Focus:** a 3px Parchment Text outline offset by 3px, on every focusable element.
 
 ### Selection tiles (heroes and equipment)
 - **Idle:** Bench Surface fill with a hairline border.
 - **Selected:** Amber Wash fill and an amber border, with `aria-pressed="true"`; the hero name turns amber.
 - **Content:** item icon (48px), name, then a caption row of grade tint and gear group. An "Edited" marker in amber appears when the item has staged changes.
+- **Keyboard:** each list is one Tab stop; arrow keys, Home, and End move between tiles.
 
 ### Inputs / Fields
 - **Style:** Charcoal Canvas well, Control Edge border, 5px corners, 44px height, labels above in Sage Muted.
@@ -243,22 +254,22 @@ Precise and quiet.
 - **Checkbox and range:** native controls tinted with `accent-color` amber.
 
 ### Enchant slot (signature)
-The working row of the bench: a 36px material icon or slot marker, stat name and "material · tier" detail, the value in Bahnschrift tabular figures, and Edit/Clear on the right. A staged slot's value turns amber with a "Staged change" marker. Validation problems show in coral with a muted line clarifying that they quote raw save values.
+The working row of the bench: a 36px material icon or slot marker, stat name and "material · tier" detail, the value in Bahnschrift tabular figures, and Revert/Edit/Clear on the right. A staged slot's value turns amber with a "Staged change" marker and gains Revert. Validation problems show in coral in display units with the tier's range, keep the raw check under a "Technical detail" disclosure, and offer a "Set to <max>" fix. The selected item's header offers "Max N rolls" when filled enchants sit below their tier maximum.
 
 ### Inline slot editor
-Opens beneath its slot on a Bench Surface panel with a Control Edge border. Stat and tier selects, then value with slider, number field, and Max. A mode label states "Game-table values" or, in amber, "Custom values". The range hint lists min, max, and step in display units. Escape or Cancel closes it and returns focus to the trigger.
+Opens beneath its slot on a Bench Surface panel with a Control Edge border. Stat and tier selects, then value with slider (hidden until a stat is chosen, named after the stat), number field, and Max. A mode label states "Game-table values" or, in amber, "Custom values". The range hint lists min, max, and step in display units; invalid input is reported in the editor's alert line, not a browser tooltip. Escape or Cancel closes it and returns focus to the trigger.
 
 ### Review dialog
-A native `<dialog>` on Bench Surface with a lifted shadow. It lists each staged slot with Before and After (After in amber), then the exact path that will be written in a canvas-colored well. Actions: "Keep editing" (secondary, receives initial focus) and "Save with backup" (primary).
+A native `<dialog>` on Bench Surface with a lifted shadow. It lists each staged slot with labeled Before and After values (After in amber), a hairline-bordered "Checked on your device only" note about server-side validation, then the exact path that will be written in a canvas-colored well. Actions: "Keep editing" (secondary, receives initial focus) and "Save with backup" (primary); Escape also cancels.
 
 ### Notices
-Full-width bordered strips under the save strip, with role="status". Success uses Success Sage text; errors use Danger Coral text and border; the version mismatch warning uses amber text.
+Full-width bordered strips under the save strip, with role="status", used only for results that need to persist: save (with the backup path), discard, and errors. Routine feedback such as loading or staging lives in the status text beside "Review & save" instead. Success uses Success Sage text; errors use Danger Coral text and border; the version mismatch warning uses amber text.
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** reserve Lamp Amber for the current selection, staged values, focus, and the one primary action in view.
-- **Do** keep every control at least 44px tall with a visible 3px amber focus ring.
+- **Do** reserve Lamp Amber for the current selection, staged values, and the one primary action in view.
+- **Do** keep every control at least 44px tall with a visible 3px parchment focus ring.
 - **Do** use the game's extracted icons for items and materials, sized 36px in slots, 48px in tiles, and 88px for the selected item.
 - **Do** show table version and save version separately, and keep the full save path visible in the footer and review dialog.
 - **Do** use the native dialog for confirmations and keep custom values behind the Advanced editing disclosure with a confirmation.

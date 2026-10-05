@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-05T02:39:06+00:00",
+  "generatedAt": "2026-10-05T03:04:37+00:00",
   "title": "Design System: TBH Save Editor",
   "extensions": {
     "colorMeta": {
@@ -244,6 +244,21 @@
           "#ffd9ce"
         ]
       },
+      "danger-wash": {
+        "role": "semantic",
+        "displayName": "Danger Wash",
+        "canonical": "#3a2522",
+        "tonalRamp": [
+          "#170604",
+          "#321e1b",
+          "#503936",
+          "#6f5753",
+          "#907672",
+          "#b29793",
+          "#d9bdb8",
+          "#ffe7e2"
+        ]
+      },
       "grade-legendary": {
         "role": "grade",
         "displayName": "Legendary grade",
@@ -425,7 +440,7 @@
       "refersTo": "button-primary",
       "description": "The one next action in view: Review & save, Apply enchant, Save with backup.",
       "html": "<button class=\"ds-btn-primary\">Review &amp; save (2)</button> <button class=\"ds-btn-primary\" disabled>Review &amp; save</button>",
-      "css": ".ds-btn-primary { font: .9375rem/1.5 'Segoe UI', sans-serif; min-height: 44px; padding: .65rem 1rem; border-radius: 5px; cursor: pointer; transition: background-color 120ms, border-color 120ms; font-weight: 700; background: #f0ba58; border: 1px solid #f0ba58; color: #171a13; } .ds-btn-primary:hover:not(:disabled) { background: #ffd28a; border-color: #ffd28a; } .ds-btn-primary:focus-visible { outline: 3px solid #f0ba58; outline-offset: 4px; } .ds-btn-primary:disabled { background: transparent; border-color: #3b4035; color: #b8bdb0; font-weight: 600; cursor: not-allowed; }"
+      "css": ".ds-btn-primary { font: .9375rem/1.5 'Segoe UI', sans-serif; min-height: 44px; padding: .65rem 1rem; border-radius: 5px; cursor: pointer; transition: background-color 120ms, border-color 120ms; font-weight: 700; background: #f0ba58; border: 1px solid #f0ba58; color: #171a13; } .ds-btn-primary:hover:not(:disabled) { background: #ffd28a; border-color: #ffd28a; } .ds-btn-primary:focus-visible { outline: 3px solid #f2f3eb; outline-offset: 3px; } .ds-btn-primary:disabled { background: transparent; border-color: #3b4035; color: #b8bdb0; font-weight: 600; cursor: not-allowed; }"
     },
     {
       "name": "Secondary Button",
@@ -433,7 +448,7 @@
       "refersTo": "button-secondary",
       "description": "Load save, Edit, Add, Keep editing.",
       "html": "<button class=\"ds-btn-secondary\">Load save</button>",
-      "css": ".ds-btn-secondary { font: .9375rem/1.5 'Segoe UI', sans-serif; min-height: 44px; padding: .65rem 1rem; border-radius: 5px; cursor: pointer; transition: background-color 120ms, border-color 120ms; background: transparent; border: 1px solid #777e6e; color: #f2f3eb; } .ds-btn-secondary:hover { background: #252920; } .ds-btn-secondary:active { background: #353b2d; } .ds-btn-secondary:focus-visible { outline: 3px solid #f0ba58; outline-offset: 4px; }"
+      "css": ".ds-btn-secondary { font: .9375rem/1.5 'Segoe UI', sans-serif; min-height: 44px; padding: .65rem 1rem; border-radius: 5px; cursor: pointer; transition: background-color 120ms, border-color 120ms; background: transparent; border: 1px solid #777e6e; color: #f2f3eb; } .ds-btn-secondary:hover { background: #252920; } .ds-btn-secondary:active { background: #353b2d; } .ds-btn-secondary:focus-visible { outline: 3px solid #f2f3eb; outline-offset: 3px; }"
     },
     {
       "name": "Quiet Button",
@@ -441,7 +456,7 @@
       "refersTo": "button-quiet",
       "description": "Clear, Cancel, Close: low-emphasis actions.",
       "html": "<button class=\"ds-btn-quiet\">Clear</button>",
-      "css": ".ds-btn-quiet { font: .9375rem/1.5 'Segoe UI', sans-serif; min-height: 44px; padding: .65rem 1rem; border-radius: 5px; cursor: pointer; transition: background-color 120ms, border-color 120ms; background: transparent; border: 1px solid transparent; color: #b8bdb0; } .ds-btn-quiet:hover { background: #252920; color: #f2f3eb; } .ds-btn-quiet:focus-visible { outline: 3px solid #f0ba58; outline-offset: 4px; }"
+      "css": ".ds-btn-quiet { font: .9375rem/1.5 'Segoe UI', sans-serif; min-height: 44px; padding: .65rem 1rem; border-radius: 5px; cursor: pointer; transition: background-color 120ms, border-color 120ms; background: transparent; border: 1px solid transparent; color: #b8bdb0; } .ds-btn-quiet:hover { background: #252920; color: #f2f3eb; } .ds-btn-quiet:focus-visible { outline: 3px solid #f2f3eb; outline-offset: 3px; }"
     },
     {
       "name": "Text Field",
@@ -449,7 +464,7 @@
       "refersTo": "input",
       "description": "Save path, equipment search, value entry.",
       "html": "<label class=\"ds-label\" for=\"ds-find\">Find equipment</label><input id=\"ds-find\" class=\"ds-input\" placeholder=\"Name or rarity\">",
-      "css": ".ds-label { display: block; color: #b8bdb0; font: .8125rem/1.5 'Segoe UI', sans-serif; margin-bottom: .4rem; } .ds-input { width: 100%; min-height: 44px; padding: .65rem .8rem; border: 1px solid #777e6e; border-radius: 5px; background: #151714; color: #f2f3eb; font: 1rem 'Segoe UI', sans-serif; caret-color: #f0ba58; } .ds-input::placeholder { color: #a4ab9a; } .ds-input:focus-visible { outline: 3px solid #f0ba58; outline-offset: 4px; }"
+      "css": ".ds-label { display: block; color: #b8bdb0; font: .8125rem/1.5 'Segoe UI', sans-serif; margin-bottom: .4rem; } .ds-input { width: 100%; min-height: 44px; padding: .65rem .8rem; border: 1px solid #777e6e; border-radius: 5px; background: #151714; color: #f2f3eb; font: 1rem 'Segoe UI', sans-serif; caret-color: #f0ba58; } .ds-input::placeholder { color: #a4ab9a; } .ds-input:focus-visible { outline: 3px solid #f2f3eb; outline-offset: 3px; }"
     },
     {
       "name": "Selection Tile",
@@ -457,7 +472,7 @@
       "refersTo": "selection-tile",
       "description": "Hero and equipment choices; amber wash and border when selected.",
       "html": "<button class=\"ds-tile\" aria-pressed=\"true\"><strong>Knight</strong><small>Level 36</small></button> <button class=\"ds-tile\" aria-pressed=\"false\"><strong>Ranger</strong><small>Level 17</small></button>",
-      "css": ".ds-tile { min-height: 62px; min-width: 150px; text-align: left; padding: .65rem .75rem; border: 1px solid #3b4035; border-radius: 5px; background: #1d201b; color: #f2f3eb; font: .9375rem/1.5 'Segoe UI', sans-serif; cursor: pointer; transition: border-color 120ms, background-color 120ms; } .ds-tile strong { display: block; font-weight: 600; } .ds-tile small { display: block; color: #b8bdb0; } .ds-tile:hover { border-color: #777e6e; } .ds-tile[aria-pressed=true] { background: #2e2a1e; border-color: #f0ba58; } .ds-tile[aria-pressed=true] strong { color: #f0ba58; } .ds-tile:focus-visible { outline: 3px solid #f0ba58; outline-offset: 4px; }"
+      "css": ".ds-tile { min-height: 62px; min-width: 150px; text-align: left; padding: .65rem .75rem; border: 1px solid #3b4035; border-radius: 5px; background: #1d201b; color: #f2f3eb; font: .9375rem/1.5 'Segoe UI', sans-serif; cursor: pointer; transition: border-color 120ms, background-color 120ms; } .ds-tile strong { display: block; font-weight: 600; } .ds-tile small { display: block; color: #b8bdb0; } .ds-tile:hover { border-color: #777e6e; } .ds-tile[aria-pressed=true] { background: #2e2a1e; border-color: #f0ba58; } .ds-tile[aria-pressed=true] strong { color: #f0ba58; } .ds-tile:focus-visible { outline: 3px solid #f2f3eb; outline-offset: 3px; }"
     },
     {
       "name": "Enchant Slot",
@@ -465,7 +480,7 @@
       "refersTo": "slot-editor",
       "description": "Signature working row: marker or material icon, stat and detail, tabular value, actions on the right.",
       "html": "<div class=\"ds-slot\"><span class=\"ds-slot-mark\">1</span><div class=\"ds-slot-copy\"><strong>Cooldown Reduction</strong><span>Void Opal · Tier 8</span></div><span class=\"ds-slot-value\">12.5%</span><button class=\"ds-slot-btn\">Edit</button></div>",
-      "css": ".ds-slot { display: flex; align-items: center; gap: .75rem; padding: .9rem 0; border-top: 1px solid #3b4035; border-bottom: 1px solid #3b4035; color: #f2f3eb; font: .9375rem/1.5 'Segoe UI', sans-serif; } .ds-slot-mark { display: grid; place-items: center; width: 36px; height: 36px; border: 1px dashed #777e6e; border-radius: 4px; color: #b8bdb0; font-size: .75rem; } .ds-slot-copy { flex: 1; } .ds-slot-copy strong { display: block; font-size: .875rem; } .ds-slot-copy span { color: #b8bdb0; font-size: .75rem; } .ds-slot-value { font: 600 1.2rem/1.2 Bahnschrift, 'Segoe UI', sans-serif; font-variant-numeric: tabular-nums; color: #f0ba58; } .ds-slot-btn { min-height: 44px; padding: .5rem .8rem; border: 1px solid #777e6e; border-radius: 5px; background: transparent; color: #f2f3eb; font-size: .8125rem; cursor: pointer; } .ds-slot-btn:hover { background: #252920; } .ds-slot-btn:focus-visible { outline: 3px solid #f0ba58; outline-offset: 4px; }"
+      "css": ".ds-slot { display: flex; align-items: center; gap: .75rem; padding: .9rem 0; border-top: 1px solid #3b4035; border-bottom: 1px solid #3b4035; color: #f2f3eb; font: .9375rem/1.5 'Segoe UI', sans-serif; } .ds-slot-mark { display: grid; place-items: center; width: 36px; height: 36px; border: 1px dashed #777e6e; border-radius: 4px; color: #b8bdb0; font-size: .75rem; } .ds-slot-copy { flex: 1; } .ds-slot-copy strong { display: block; font-size: .875rem; } .ds-slot-copy span { color: #b8bdb0; font-size: .75rem; } .ds-slot-value { font: 600 1.2rem/1.2 Bahnschrift, 'Segoe UI', sans-serif; font-variant-numeric: tabular-nums; color: #f0ba58; } .ds-slot-btn { min-height: 44px; padding: .5rem .8rem; border: 1px solid #777e6e; border-radius: 5px; background: transparent; color: #f2f3eb; font-size: .8125rem; cursor: pointer; } .ds-slot-btn:hover { background: #252920; } .ds-slot-btn:focus-visible { outline: 3px solid #f2f3eb; outline-offset: 3px; }"
     }
   ],
   "narrative": {
@@ -501,8 +516,8 @@
       }
     ],
     "dos": [
-      "**Do** reserve Lamp Amber for the current selection, staged values, focus, and the one primary action in view.",
-      "**Do** keep every control at least 44px tall with a visible 3px amber focus ring.",
+      "**Do** reserve Lamp Amber for the current selection, staged values, and the one primary action in view.",
+      "**Do** keep every control at least 44px tall with a visible 3px parchment focus ring.",
       "**Do** use the game's extracted icons for items and materials, sized 36px in slots, 48px in tiles, and 88px for the selected item.",
       "**Do** show table version and save version separately, and keep the full save path visible in the footer and review dialog.",
       "**Do** use the native dialog for confirmations and keep custom values behind the Advanced editing disclosure with a confirmation."
