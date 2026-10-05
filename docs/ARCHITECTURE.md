@@ -1,6 +1,6 @@
 # 🏗 Architecture
 
-Bundled assets target **1.2.4**, Steam build **25336766**. Source hashes and
+Bundled assets target **1.2.8**, Steam build **25454993**. Source hashes and
 coverage are recorded in `data/version.json`. Crypto details below retain
 their original 1.00.17 provenance; local validation and encrypted-copy tests
 do not establish that an edited save loads in the current game.
@@ -401,7 +401,7 @@ game access required).
 
 ### `data/tables/*.csv`
 
-CSV files extracted from the 1.2.4 `sharedassets0.assets` via `extract/extract_tables.py`.
+CSV files extracted from the 1.2.8 `sharedassets0.assets` via `extract/extract_tables.py`.
 
 | File | Rows | Used by |
 |---|---|---|

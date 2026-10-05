@@ -4,8 +4,8 @@ Local-only web tool that edits enchantments (Decoration / Engraving / Inscriptio
 on heroes' equipped gear in a **Taskbar Hero** (`SaveFile_Live.es3`) save file.
 Python 3 stdlib HTTP server + vanilla HTML/CSS/JS frontend. **Zero runtime
 dependencies.** Edits are validated against pre-extracted game tables and the
-`SystemInfo` HMAC is recomputed on save. Bundled tables target **1.2.4**, Steam
-build **25336766**; in-game edited-save reload is not verified for this update.
+`SystemInfo` HMAC is recomputed on save. Bundled tables target **1.2.8**, Steam
+build **25454993**; in-game edited-save reload is not verified for this update.
 Read [`README.md`](README.md) and [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 before touching anything beyond trivial edits.
 
@@ -50,7 +50,7 @@ data/                # Portable game data (ships with app). DO NOT edit by hand 
   strings.json       # HeroName_<key> -> hero display name (6).
   enums.json         # StatType / MODTYPE / ERecipeType / EMaterialType / EGradeType.
   icon_map.json + icons/*.png  # 530 icons, including shared-sprite aliases.
-  version.json       # 1.2.4/build 25336766, source hashes/counts; data extraction only.
+  version.json       # 1.2.8/build 25454993, source hashes/counts; data extraction only.
 tests/               # Core numeric/validation and HTTP encrypted-fixture tests.
 extract/             # ONE-SHOT scripts that GENERATE data/. Need UnityPy + the game installed.
 docs/                # README, ARCHITECTURE, PORTING.
@@ -76,7 +76,7 @@ docs/                # README, ARCHITECTURE, PORTING.
    HMAC composition (`account|player|steamId`, joined by `|`) or the JSON
    serialization without understanding the impact.
 4. **`data/` is generated, not hand-edited.** Use
-   `python -B extract/extract_all.py --dump-path 'C:\path\to\dump.cs' --game-version 1.2.4 --steam-build 25336766`
+   `python -B extract/extract_all.py --dump-path 'C:\path\to\dump.cs' --game-version 1.2.8 --steam-build 25454993`
    with UnityPy, the game, and its matching dump. `--game-dir` overrides the
    standard Windows Steam path. Extraction stages and verifies the catalog
    before replacing `data/`; `data/version.json` records provenance and limits.
@@ -107,7 +107,7 @@ docs/                # README, ARCHITECTURE, PORTING.
   Changing one without the other breaks the UI.
 - **Crypto and table provenance are separate.** The ES3 password, PBKDF2 params
   (iters=100, dkLen=16), and HMAC key in `core/es3.py` retain their historical
-  1.00.17 provenance. Tables/enums/assets in `data/` target 1.2.4. When the game
+  1.00.17 provenance. Tables/enums/assets in `data/` target 1.2.8. When the game
   updates, follow [`docs/PORTING.md`](docs/PORTING.md)
   (decrypt → verify HMAC → re-extract → smoke-test), not a blind edit.
 

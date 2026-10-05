@@ -1,7 +1,7 @@
 """Refresh portable game data using UnityPy and a matching Il2CppDumper dump.
 
 python -B extract/extract_all.py --dump-path C:\\path\\dump.cs \
-    --game-version 1.2.4 --steam-build 25336766
+    --game-version 1.2.8 --steam-build 25454993
 
 Use --game-dir for another Steam library. UnityPy is an extraction dependency
 only; the editor keeps its zero-dependency runtime.

@@ -1,17 +1,17 @@
 {
-  "gameVersion": "1.2.4",
-  "steamBuild": "25336766",
-  "extractedAt": "2026-09-17T05:31:59+00:00",
+  "gameVersion": "1.2.8",
+  "steamBuild": "25454993",
+  "extractedAt": "2026-10-05T17:15:36+00:00",
   "source": {
     "kind": "installed-game-assets-and-il2cpp-dump",
     "versionEvidence": "Game version and Steam build supplied to extraction command",
-    "unityPyVersion": "1.25.3",
+    "unityPyVersion": "1.25.4",
     "sha256": {
-      "sharedassets0.assets": "bed243deb63d4ed4c74067978482465a5004663ed5cbcfb39a901c1400cbf882",
-      "sharedassets0.assets.resS": "56cbabf6cdf5d07ade571280fcc1b4a2db10bbdfdf92d7caf043cdfc09d2fcf2",
-      "localization-assets-shared_assets_all.bundle": "b8192fb2eb8af62dd113e20cc6c792c5740aaa4311bad04861280dc926755cf1",
-      "localization-string-tables-english(unitedstates)(en-us)_assets_all.bundle": "8729d6cde0e9ce8240c6dcfba54c30ed1db9243ae7d4e0aaeb5e034ea319bf2b",
-      "dump.cs": "599a358b44d5418ec3971eda8974eb830093ead6345a48fa6e8b368618763266"
+      "sharedassets0.assets": "ee89e243ef249d1d2fbde0bf039a84219147ab645000ed60d43435aeeda5be78",
+      "sharedassets0.assets.resS": "e4b585e9e01c958d2cd54b75ceb7a660ec9dea86c0493ff95fc7d34cb0501bf6",
+      "localization-assets-shared_assets_all.bundle": "8b91b92485cb9f45bb156726b8786e9c32d797476c97d0ae8549c87d1bd2434e",
+      "localization-string-tables-english(unitedstates)(en-us)_assets_all.bundle": "765308f447761d7311137133faac91e2144f34ba9aa556675992b07585ee6877",
+      "dump.cs": "811540481b724a445736f7dbae21ee878dd9fe67101a8862f3ff080ed415c32f"
     }
   },
   "counts": {

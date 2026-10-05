@@ -4,13 +4,13 @@
 > full checklist, how to extract the new HMAC key, the reverse-engineering
 > workflow, and the data extraction pipeline.
 >
-> Bundled data now targets **1.2.4**, Steam build **25336766**. Historical
+> Bundled data now targets **1.2.8**, Steam build **25454993**. Historical
 > crypto keys, obfuscated method names, and RVAs below describe **1.00.17**;
 > do not assume those method locations still apply to a newer binary.
 
 Current verification covers extracted data and local encrypted-copy checks.
 Browser checks also use disposable copies. Loading an edited save in game
-1.2.4 has not been verified; `data/version.json` records that boundary.
+1.2.8 has not been verified; `data/version.json` records that boundary.
 
 ---
 
@@ -274,7 +274,7 @@ an Il2CppDumper `dump.cs` produced from the same installed game build.
 
 ```powershell
 python -m pip install UnityPy
-python -B extract\extract_all.py --dump-path 'C:\path\to\dump.cs' --game-version 1.2.4 --steam-build 25336766
+python -B extract\extract_all.py --dump-path 'C:\path\to\dump.cs' --game-version 1.2.8 --steam-build 25454993
 ```
 
 `--game-dir` accepts the install root or `TaskBarHero_Data`; its default is
@@ -303,7 +303,7 @@ The full command also generates `data/version.json`: game version/build,
 UTC extraction time, source hashes, UnityPy version, counts, coverage limits,
 and `verification.inGameVerified: false`.
 
-The 1.2.4 snapshot contains 15 tables, 534 item names, 6 hero names, and 530
+The 1.2.8 snapshot (tables byte-identical to 1.2.4) contains 15 tables, 534 item names, 6 hero names, and 530
 icons. Enum counts are StatType 65, MODTYPE 3, ERecipeType 10, EMaterialType 8,
 and EGradeType 11. All old numeric IDs remain unchanged; new members include
 MaxAllElementalResistance, CORROSION, and ETC.

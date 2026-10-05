@@ -5,7 +5,7 @@
 > **automatic anti-tamper HMAC** on save. Runs locally in your browser, no
 > upload, no telemetry.
 
-Bundled data: **Taskbar Hero 1.2.4**, Steam build **25336766**. Data extraction,
+Bundled data: **Taskbar Hero 1.2.8**, Steam build **25454993**. Data extraction,
 encrypted-copy checks, and browser checks are separate from loading an edited
 save in the game; an in-game reload has not been verified for this update.
 
@@ -51,7 +51,7 @@ save in the game; an in-game reload has not been verified for this update.
 
 ## ✨ Features
 
-- ✅ **Game-table validation** — checks normal edits against the bundled 1.2.4 tables
+- ✅ **Game-table validation** — checks normal edits against the bundled 1.2.8 tables
 - 🔐 **Local AES-128-CBC + HMAC-SHA256** — the save never leaves your machine
 - 📦 **Zero dependencies** — pure Python stdlib; a single optional `cryptography` for speed
 - 🧮 **Recomputes `SystemInfo`** on save, with an automatic backup of the previous file
@@ -210,13 +210,13 @@ outside the allowed interval are rejected before the item is changed.
 
 ## 🔄 Re-Extracting Data
 
-Data in `data/` comes from **1.2.4**, Steam build **25336766**. To refresh it,
+Data in `data/` comes from **1.2.8**, Steam build **25454993**. To refresh it,
 install UnityPy in an extraction environment and obtain an Il2CppDumper
 `dump.cs` from the same installed build:
 
 ```powershell
 python -m pip install UnityPy
-python -B extract/extract_all.py --dump-path 'C:\path\to\dump.cs' --game-version 1.2.4 --steam-build 25336766
+python -B extract/extract_all.py --dump-path 'C:\path\to\dump.cs' --game-version 1.2.8 --steam-build 25454993
 ```
 
 For another Steam library, add `--game-dir 'D:\SteamLibrary\steamapps\common\TaskbarHero'`.

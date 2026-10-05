@@ -28,7 +28,7 @@ Edits are constrained to stat, tier, material, and value combinations that exist
 ## Capabilities and Constraints
 
 - Python 3 stdlib server plus vanilla HTML/CSS/JS. No build step, no npm, no runtime dependencies, and no network font or CDN requests; the tool works offline.
-- Bundled tables target Taskbar Hero 1.2.4 (Steam build 25336766). Table version and save version are shown separately.
+- Bundled tables target Taskbar Hero 1.2.8 (Steam build 25454993). Table version and save version are shown separately.
 - Stat values are displayed in scaled units (raw ÷ 1, 10, or 100); validation is exact, with no truncation.
 - UI language is English only; no i18n is planned.
 - Terminology: Decoration, Engraving, Inscription (slot groups); material, stat, tier, value; "staged" changes before "save".
@@ -42,7 +42,7 @@ Edits are constrained to stat, tier, material, and value combinations that exist
 
 - Original game item, material, and hero icons extracted to `data/icons/` (530).
 - Video tutorial: `docs/tutorial_tbh_save_editor.webm`.
-- No user testimonials, usage numbers, or confirmed in-game reload for 1.2.4; do not fabricate them.
+- No user testimonials, usage numbers, or confirmed in-game reload for 1.2.8; do not fabricate them.
 
 ## Product Principles
 
