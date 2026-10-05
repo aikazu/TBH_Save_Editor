@@ -185,7 +185,7 @@ function renderEnchants() {
   if (!item) return;
   const detail = el("div");
   detail.append(el("span", "selected-caption", `${STATE.heroes[STATE.hero].name}'s equipment`), el("h3", "", item.name));
-  const meta = el("div", "item-meta"); meta.append(grade(item), el("span", "", `· ${titleCase(item.group)}`)); detail.append(meta);
+  const meta = el("div", "item-meta"); meta.append(grade(item), el("span", "", titleCase(item.group))); detail.append(meta);
   $("#selectedItem").replaceChildren(icon(item.icon), detail);
   ["Decoration", "Engraving", "Inscription"].forEach((label, groupIndex) => {
     const section = el("section", "enchant-group");
@@ -209,7 +209,12 @@ function slotRow(slot) {
   summary.append(copy);
   if (slot.filled) summary.append(el("span", "slot-value", `${format(slot.value)}${slot.isPercent ? "%" : ""}`));
   row.append(summary);
-  if (slot.errors?.length) row.append(el("div", "slot-error", slot.errors.join(". ")));
+  if (slot.errors?.length) {
+    // Validation messages quote raw save integers, which differ from the scaled value shown above.
+    const problem = el("div", "slot-error", "This roll doesn't match the game tables.");
+    problem.append(el("span", "", `Raw save value: ${slot.errors.join(". ")}`));
+    row.append(problem);
+  }
   if (changed) row.append(el("span", "edited-label", "Staged change"));
   if (slot.allowed || slot.filled) {
     const actions = el("div", "slot-actions");
