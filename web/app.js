@@ -34,6 +34,7 @@ function renderStatus() {
   $("#dirtyText").className = count ? "dirty" : "";
   $("#btnSave").disabled = !count || STATE.busy;
   $("#btnSave").textContent = count ? `Review & save (${count})` : "Review & save";
+  $("#btnSave").hidden = !STATE.loaded;
   $("#btnDiscard").hidden = !count;
   $("#btnDiscard").disabled = STATE.busy;
 }
