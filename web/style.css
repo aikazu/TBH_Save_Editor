@@ -100,6 +100,9 @@ h1 { font-size: clamp(1.1rem, 2vw, 1.55rem); line-height: 1.25; }
 .selected-item h3 { font-size: clamp(1.4rem, 2vw, 1.9rem); line-height: 1.2; margin: .35rem 0; }
 .selected-item .item-meta { font-size: .8125rem; }
 .selected-item .selected-caption { color: var(--muted); font-size: .8125rem; }
+.selected-item > div { flex: 1; min-width: 0; }
+.max-all { flex-shrink: 0; align-self: flex-start; font-size: .8125rem; padding: .5rem .8rem; }
+#dirtyText { margin-right: auto; }
 .enchant-group { margin-bottom: 1.4rem; }
 .group-heading { display: flex; justify-content: space-between; gap: 1rem; margin-bottom: .5rem; align-items: baseline; }
 .group-heading h3 { font: 600 .9375rem/1.5 var(--font); }
@@ -173,6 +176,7 @@ dialog h2 { font-size: 1.8rem; line-height: 1.2; margin-bottom: .75rem; }
   body:has(#dirtyText.dirty) .save-actions { position: fixed; inset: auto 0 0; z-index: 10; padding: .75rem 1.25rem; background: var(--surface); border-top: 1px solid var(--line); box-shadow: 0 -8px 24px #0006; }
 }
 @media (max-width: 399px) { .slot-value { font-size: 1rem; } .slot-actions button { padding-inline: .6rem; } }
+@media (max-width: 649px) { .save-actions { gap: .5rem; } .save-actions button { white-space: nowrap; padding-inline: .8rem; } #btnDiscard { padding-inline: .6rem; } }
 @media (min-width: 650px) {
   .app-header, .save-strip { padding-inline: 1.75rem; }
   .hero-list { grid-template-columns: repeat(3,minmax(0,1fr)); }

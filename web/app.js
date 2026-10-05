@@ -34,6 +34,8 @@ function renderStatus() {
   $("#dirtyText").className = count ? "dirty" : "";
   $("#btnSave").disabled = !count || STATE.busy;
   $("#btnSave").textContent = count ? `Review & save (${count})` : "Review & save";
+  $("#btnDiscard").hidden = !count;
+  $("#btnDiscard").disabled = STATE.busy;
 }
 async function busy(button, label, work) {
   if (STATE.busy) return;
@@ -94,10 +96,10 @@ function empty(node, heading, text) {
   node.hidden = false;
 }
 
-async function loadSave() {
-  if (STATE.busy) return;
-  if (STATE.changes.size && !await confirmAction({ title: "Discard staged changes?", description: "Loading a save replaces the unsaved changes in this workbench. Your file has not been changed.", accept: "Discard & load", cancel: "Keep editing", danger: true })) return;
-  await busy($("#btnLoad"), "Loading…", async () => {
+async function loadSave(confirmed = false) {
+  if (STATE.busy) return false;
+  if (STATE.changes.size && !confirmed && !await confirmAction({ title: "Discard staged changes?", description: "Loading a save replaces the unsaved changes in this workbench. Your file has not been changed.", accept: "Discard & load", cancel: "Keep editing", danger: true })) return false;
+  return busy($("#btnLoad"), "Loading…", async () => {
     notice("Reading and decrypting your save…");
     try {
       const data = await api("POST", "/api/load", { path: $("#savePath").value.trim() });
@@ -118,7 +120,8 @@ async function loadSave() {
       $("#versionWarning").textContent = `This save is version ${data.saveVersion}; the editor tables are ${data.dataVersion}. Enchant options may differ.`;
       renderHeroes(); renderItems(); renderEnchants();
       notice("");
-    } catch (error) { notice(error.message, "error"); }
+      return true;
+    } catch (error) { notice(error.message, "error"); return false; }
   });
 }
 // Hero and item lists are one Tab stop each; arrow keys, Home, and End move within them.
@@ -224,6 +227,14 @@ function renderEnchants() {
   detail.append(el("span", "selected-caption", `${STATE.heroes[STATE.hero].name}'s equipment`), el("h3", "", item.name));
   const meta = el("div", "item-meta"); meta.append(grade(item), el("span", "", titleCase(item.group))); detail.append(meta);
   $("#selectedItem").replaceChildren(icon(item.icon), detail);
+  const maxable = maxableSlots(item).length;
+  if (maxable) {
+    const max = el("button", "secondary max-all", `Max ${maxable} ${maxable === 1 ? "roll" : "rolls"}`);
+    max.type = "button";
+    max.setAttribute("aria-label", `Set ${maxable} filled ${maxable === 1 ? "enchant" : "enchants"} on ${item.name} to their tier maximum`);
+    max.onclick = () => maxAll(max);
+    $("#selectedItem").append(max);
+  }
   ["Decoration", "Engraving", "Inscription"].forEach((label, groupIndex) => {
     const section = el("section", "enchant-group");
     const slots = item.enchants.slice(groupIndex * 2, groupIndex * 2 + 2);
@@ -248,8 +259,16 @@ function slotRow(slot) {
   row.append(summary);
   if (slot.errors?.length) row.append(slotProblem(slot));
   if (changed) row.append(el("span", "edited-label", "Staged change"));
-  if (slot.allowed || slot.filled) {
+  const before = changed && STATE.changes.get(changeKey(STATE.item.uniqueId, slot.slot)).before;
+  const revertible = changed && (!before.filled || before.identityValid);
+  if (slot.allowed || slot.filled || revertible) {
     const actions = el("div", "slot-actions");
+    if (revertible) {
+      const revert = el("button", "quiet", "Revert");
+      revert.type = "button"; revert.setAttribute("aria-label", `Revert ${slot.label.toLowerCase()} ${slot.slot % 2 + 1} to its loaded value`);
+      revert.onclick = () => revertSlot(slot, revert);
+      actions.append(revert);
+    }
     if (slot.allowed) {
       const edit = el("button", "secondary", slot.filled ? "Edit" : "Add");
       edit.type = "button"; edit.dataset.editSlot = slot.slot;
@@ -392,22 +411,27 @@ async function openEditor(row, current, trigger) {
   if (!options.length) { stat.disabled = true; apply.disabled = true; hint.textContent = "No enchant options are available for this item."; }
   stat.focus({ preventScroll: true });
 }
+// Records a server-applied edit; returns false when the slot came back unchanged.
+function recordChange(item, slot, original, custom) {
+  const updated = item.enchants[slot];
+  if (JSON.stringify(original) === JSON.stringify(updated)) return false;
+  const key = changeKey(item.uniqueId, slot);
+  STATE.changes.set(key, { uid: item.uniqueId, hero: STATE.heroes[STATE.hero].name, itemName: item.name, label: `${updated.label} ${slot % 2 + 1}`, before: STATE.changes.get(key)?.before || original, after: updated, custom });
+  STATE.heroes.forEach((hero) => { hero.items = hero.items.map((entry) => entry.uniqueId === item.uniqueId ? item : entry); });
+  STATE.item = item;
+  return true;
+}
 async function setEnchant(payload, button, errorNode) {
   const original = STATE.item.enchants[payload.slot];
-  const heroName = STATE.heroes[STATE.hero].name;
   let applied = false;
   await busy(button, "Applying…", async () => {
     try {
       const item = await api("POST", "/api/set_enchant", payload);
       applied = true;
-      const updated = item.enchants[payload.slot];
-      if (JSON.stringify(original) === JSON.stringify(updated)) {
+      if (!recordChange(item, payload.slot, original, !!payload.force)) {
         closeEditor(); notice("This enchant is unchanged."); return;
       }
-      const key = changeKey(item.uniqueId, payload.slot);
-      STATE.changes.set(key, { uid: item.uniqueId, hero: heroName, itemName: item.name, label: `${updated.label} ${payload.slot % 2 + 1}`, before: STATE.changes.get(key)?.before || original, after: updated, custom: !!payload.force });
-      STATE.heroes.forEach((hero) => { hero.items = hero.items.map((entry) => entry.uniqueId === item.uniqueId ? item : entry); });
-      STATE.item = item; renderItems(); renderEnchants();
+      renderItems(); renderEnchants();
       notice("");
     } catch (error) {
       if (errorNode) errorNode.textContent = error.message;
@@ -416,6 +440,44 @@ async function setEnchant(payload, button, errorNode) {
   });
   if (applied) $(`[data-edit-slot="${payload.slot}"]`)?.focus({ preventScroll: true });
   else if (errorNode) $("#editValue")?.focus({ preventScroll: true });
+}
+function maxableSlots(item) {
+  return item.enchants.filter((slot) => slot.filled && slot.allowed && slot.identityValid && slot.range && slot.value !== slot.range.max);
+}
+async function maxAll(button) {
+  const slots = maxableSlots(STATE.item);
+  await busy(button, "Applying…", async () => {
+    let done = 0;
+    try {
+      for (const slot of slots) {
+        const original = STATE.item.enchants[slot.slot];
+        const item = await api("POST", "/api/set_enchant", { uniqueId: STATE.item.uniqueId, slot: slot.slot, materialKey: slot.materialKey, statModKey: slot.statModKey, tier: slot.tier, value: slot.range.max });
+        if (recordChange(item, slot.slot, original, false)) done += 1;
+      }
+      notice("");
+    } catch (error) { notice(`${done} of ${slots.length} rolls set to their tier maximum. ${error.message}`, "error"); }
+    renderItems(); renderEnchants();
+  });
+}
+async function revertSlot(slot, button) {
+  const before = STATE.changes.get(changeKey(STATE.item.uniqueId, slot.slot)).before;
+  // A roll that was already outside the tables can only be restored as a custom value.
+  const restore = before.filled
+    ? { materialKey: before.materialKey, statModKey: before.statModKey, tier: before.tier, value: before.value, force: !!before.errors?.length }
+    : { clear: true };
+  await setEnchant({ uniqueId: STATE.item.uniqueId, slot: slot.slot, ...restore }, button);
+}
+async function discardAll() {
+  if (STATE.busy || !STATE.changes.size) return;
+  if (!await confirmAction({ title: "Discard all staged changes?", description: "The save is reloaded from disk as it is now. Nothing has been written, so your file is unchanged.", accept: "Discard changes", cancel: "Keep editing", danger: true })) return;
+  const heroIndex = STATE.hero, itemId = STATE.item?.uniqueId;
+  $("#savePath").value = STATE.path;
+  // Staged edits live in the server's copy too, so they only count as discarded once the reload succeeds.
+  if (!await loadSave(true) || !STATE.heroes[heroIndex]) return;
+  STATE.hero = heroIndex;
+  STATE.item = STATE.heroes[heroIndex].items.find((item) => item.uniqueId === itemId) || STATE.heroes[heroIndex].items[0] || null;
+  renderHeroes(); renderItems(); renderEnchants();
+  notice("Staged changes discarded. The save was reloaded from disk.", "success");
 }
 function describeSlot(slot) { return slot.filled ? `${slot.stat}: ${format(slot.value)}${slot.isPercent ? "%" : ""} · Tier ${slot.tier} · ${slot.materialName}` : "Empty slot"; }
 async function reviewSave() {
@@ -448,6 +510,7 @@ async function reviewSave() {
 }
 $("#loadForm").onsubmit = (event) => { event.preventDefault(); loadSave(); };
 $("#btnSave").onclick = reviewSave;
+$("#btnDiscard").onclick = discardAll;
 $("#itemSearch").oninput = renderItems;
 $("#cbCustom").onchange = async (event) => {
   const checkbox = event.target;
