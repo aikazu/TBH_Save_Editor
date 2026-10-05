@@ -4,3 +4,6 @@ __pycache__/
 *.pyc
 *.es3
 *.es3.bak
+*.es3.*.bak
+.impeccable/critique/
+.impeccable/live/
