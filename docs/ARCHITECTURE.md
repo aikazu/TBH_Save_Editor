@@ -495,7 +495,7 @@ their own confirmation dialogs.
 ### `/api/save` flow
 
 1. Loop over **all** `itemSaveDatas` and call `recount_enchants()` — counts any items whose `EnchantCount` was fixed
-2. `SaveFile.save(path, backup=True)` — serializes + HMAC + encrypt; copy the current file to a new `<path>.<YYYYMMDD-HHMMSS>.bak` (never overwriting an earlier backup) + write `.es3`
+2. `SaveFile.save(path, backup=True)` — serializes + HMAC + encrypt; copy the current file to a new `<path>.<YYYYMMDD-HHMMSS>.bak` (never overwritten; then prune to `BACKUP_LIMIT` = 3, keeping the oldest plus the newest two) + write `.es3`
 3. Return `{ok, path, backup, fixed}` so the UI can surface "X counter(s) repaired"
 
 Saving repairs counters but does not revalidate every existing enchant against

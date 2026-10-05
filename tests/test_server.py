@@ -8,6 +8,7 @@ import threading
 import unittest
 from unittest.mock import patch
 
+from core import es3
 from core.es3 import SaveFile
 import server
 
@@ -147,6 +148,23 @@ class ServerTests(unittest.TestCase):
         self.assertTrue(first["backup"].endswith(".bak"))
         self.assertEqual(Path(first["backup"]).read_bytes(), original_bytes)
         self.assertEqual(Path(second["backup"]).read_bytes(), first_saved_bytes)
+
+    def test_backups_are_capped_but_keep_the_original(self):
+        original_bytes = Path(self.path).read_bytes()
+        legacy = Path(self.path + ".bak")
+        legacy.write_bytes(b"legacy backup")
+        self.load()
+        self.assertEqual(self.request("POST", "/api/set_enchant", self.edit)[0], 200)
+        for _ in range(4):
+            before_save = Path(self.path).read_bytes()
+            status, saved = self.request("POST", "/api/save", {})
+            self.assertEqual(status, 200, saved)
+        backups = es3._backups(self.path)
+        self.assertEqual(len(backups), es3.BACKUP_LIMIT)
+        self.assertEqual(Path(backups[0]).read_bytes(), original_bytes)
+        self.assertEqual(backups[-1], saved["backup"])
+        self.assertEqual(Path(backups[-1]).read_bytes(), before_save)
+        self.assertEqual(legacy.read_bytes(), b"legacy backup")
         self.assertEqual(self.load()["heroes"][0]["items"][0]["enchants"][2]["value"], 2.3)
 
     def test_rejected_values_do_not_create_or_extend_enchant_data(self):

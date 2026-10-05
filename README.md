@@ -24,7 +24,7 @@ save in the game; an in-game reload has not been verified for this update.
 > even one the game considers "legal" locally — can still get your account
 > **flagged or banned**.
 >
-> - **Always** keep the dated `.es3.<YYYYMMDD-HHMMSS>.bak` backups the app writes on every save.
+> - **Always** keep the dated `.es3.<YYYYMMDD-HHMMSS>.bak` backups the app writes (it keeps the oldest plus the two newest).
 > - **Close the game completely** before saving, or it overwrites your edits on exit.
 > - **Do not** use this on a save you cannot afford to lose.
 >
@@ -299,7 +299,8 @@ Beyond that, modifying any save carries inherent risk:
   damage arising from the use of this tool.
 
 **Always back up your save.** Before every save the app copies the current
-file to a new `SaveFile_Live.es3.<YYYYMMDD-HHMMSS>.bak` next to it; earlier
-backups are never overwritten, so the oldest one is your original. Ideally keep
+file to a new `SaveFile_Live.es3.<YYYYMMDD-HHMMSS>.bak` next to it. It keeps
+three: the oldest (your original from the first save) and the two newest; older
+in-between backups are deleted. Ideally keep
 your own separate backup too. If anything goes wrong, rename the backup you want
 back to `SaveFile_Live.es3`.

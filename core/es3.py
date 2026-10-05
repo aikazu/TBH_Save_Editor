@@ -9,6 +9,7 @@ import hashlib
 import hmac
 import json
 import os
+import re
 import secrets
 from datetime import datetime
 from hashlib import pbkdf2_hmac
@@ -121,12 +122,40 @@ class SaveFile:
         return backup_path
 
 
+BACKUP_LIMIT = 3
+
+
 def write_backup(path):
-    """Copy the current save to a new timestamped .bak that is never overwritten.
+    """Copy the current save to a new timestamped .bak, then prune old ones.
 
     A single fixed .bak would be replaced by the second save, destroying the
-    player's only copy of their original file.
+    player's only copy of their original file. Pruning therefore always keeps
+    the oldest backup and fills the rest of BACKUP_LIMIT with the newest.
     """
+    created = _create_backup(path)
+    _prune_backups(path)
+    return created
+
+
+def _backups(path):
+    """Dated backups of `path`, oldest first; other .bak files are never touched."""
+    folder, name = os.path.split(os.path.abspath(path))
+    pattern = re.compile(re.escape(name) + r"\.(\d{8}-\d{6})(?:-(\d+))?\.bak$")
+    found = []
+    for entry in os.listdir(folder):
+        m = pattern.match(entry)
+        if m:
+            found.append(((m.group(1), int(m.group(2) or 1)), os.path.join(folder, entry)))
+    return [p for _, p in sorted(found)]
+
+
+def _prune_backups(path):
+    backups = _backups(path)
+    for stale in backups[1:len(backups) - (BACKUP_LIMIT - 1)]:
+        os.remove(stale)
+
+
+def _create_backup(path):
     with open(path, "rb") as src:
         data = src.read()
     stem = "%s.%s" % (path, datetime.now().strftime("%Y%m%d-%H%M%S"))

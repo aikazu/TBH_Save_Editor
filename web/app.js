@@ -371,7 +371,7 @@ async function reviewSave() {
   const custom = [...STATE.changes.values()].some((change) => change.custom);
   risk.append(el("strong", "", "Checked on your device only"), el("span", "", `${custom ? "Some values are outside the game's tables and are more likely to be rejected." : "These values match the game's tables."} The game also validates some items on its servers. It may reject edited items or flag your account.`));
   const path = el("div", "review-path"); path.append(el("strong", "", "Write to"), document.createTextNode(STATE.path)); body.append(risk, path);
-  if (!await confirmAction({ title: "Review your changes", eyebrow: `${STATE.changes.size} staged ${STATE.changes.size === 1 ? "slot" : "slots"}`, description: "Close the game before saving. Your current file is first copied to a new dated .bak file next to it; earlier backups are kept.", accept: "Save with backup", cancel: "Keep editing", body })) return;
+  if (!await confirmAction({ title: "Review your changes", eyebrow: `${STATE.changes.size} staged ${STATE.changes.size === 1 ? "slot" : "slots"}`, description: "Close the game before saving. Your current file is first copied to a new dated .bak file next to it. The oldest backup and the two newest are kept.", accept: "Save with backup", cancel: "Keep editing", body })) return;
   await busy($("#btnSave"), "Saving…", async () => {
     notice("Writing your save and creating a backup…");
     try {
