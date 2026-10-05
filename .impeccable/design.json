@@ -1,0 +1,518 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-05T02:39:06+00:00",
+  "title": "Design System: TBH Save Editor",
+  "extensions": {
+    "colorMeta": {
+      "amber": {
+        "role": "primary",
+        "displayName": "Lamp Amber",
+        "canonical": "#f0ba58",
+        "tonalRamp": [
+          "#1b0400",
+          "#3a1c00",
+          "#5b3700",
+          "#7f5400",
+          "#a57300",
+          "#c5963e",
+          "#e7bd74",
+          "#ffe9ab"
+        ]
+      },
+      "amber-bright": {
+        "role": "primary",
+        "displayName": "Bright Amber",
+        "canonical": "#ffd28a",
+        "tonalRamp": [
+          "#1b0400",
+          "#3a1c00",
+          "#5c3700",
+          "#7d5500",
+          "#9e752b",
+          "#c1964f",
+          "#e8bc75",
+          "#ffe8ab"
+        ]
+      },
+      "amber-ink": {
+        "role": "primary",
+        "displayName": "Amber Ink",
+        "canonical": "#171a13",
+        "tonalRamp": [
+          "#0a0c06",
+          "#22251e",
+          "#3e4139",
+          "#5b5f57",
+          "#7b7f76",
+          "#9ca097",
+          "#c2c6bc",
+          "#ecf0e6"
+        ]
+      },
+      "amber-wash": {
+        "role": "primary",
+        "displayName": "Amber Wash",
+        "canonical": "#2e2a1e",
+        "tonalRamp": [
+          "#0e0b03",
+          "#282418",
+          "#444033",
+          "#625d50",
+          "#827d6f",
+          "#a39e90",
+          "#c9c4b5",
+          "#f4eedf"
+        ]
+      },
+      "charcoal-canvas": {
+        "role": "neutral",
+        "displayName": "Charcoal Canvas",
+        "canonical": "#151714",
+        "tonalRamp": [
+          "#0a0c09",
+          "#232522",
+          "#3e413d",
+          "#5c5e5b",
+          "#7b7e7a",
+          "#9d9f9b",
+          "#c2c5c1",
+          "#ecefeb"
+        ]
+      },
+      "bench-surface": {
+        "role": "neutral",
+        "displayName": "Bench Surface",
+        "canonical": "#1d201b",
+        "tonalRamp": [
+          "#090c08",
+          "#222520",
+          "#3e413b",
+          "#5b5f59",
+          "#7b7f78",
+          "#9ca099",
+          "#c1c6bf",
+          "#ecf0e9"
+        ]
+      },
+      "bench-raised": {
+        "role": "neutral",
+        "displayName": "Bench Raised",
+        "canonical": "#252920",
+        "tonalRamp": [
+          "#090d05",
+          "#22261d",
+          "#3d4238",
+          "#5b6055",
+          "#7a7f74",
+          "#9ba195",
+          "#c1c6bb",
+          "#ebf1e5"
+        ]
+      },
+      "bench-pressed": {
+        "role": "neutral",
+        "displayName": "Bench Pressed",
+        "canonical": "#353b2d",
+        "tonalRamp": [
+          "#080d03",
+          "#212619",
+          "#3c4234",
+          "#5a6051",
+          "#798070",
+          "#9aa291",
+          "#c0c7b6",
+          "#eaf2e0"
+        ]
+      },
+      "work-pane": {
+        "role": "neutral",
+        "displayName": "Work Pane",
+        "canonical": "#191c17",
+        "tonalRamp": [
+          "#090c08",
+          "#222520",
+          "#3e413b",
+          "#5b5f59",
+          "#7b7f78",
+          "#9ca099",
+          "#c1c6bf",
+          "#ecf0e9"
+        ]
+      },
+      "hairline": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "#3b4035",
+        "tonalRamp": [
+          "#090d05",
+          "#21261c",
+          "#3d4237",
+          "#5a6054",
+          "#7a8073",
+          "#9ba194",
+          "#c0c7b9",
+          "#ebf1e3"
+        ]
+      },
+      "control-edge": {
+        "role": "neutral",
+        "displayName": "Control Edge",
+        "canonical": "#777e6e",
+        "tonalRamp": [
+          "#080d03",
+          "#212619",
+          "#3c4234",
+          "#5a6051",
+          "#798070",
+          "#9aa291",
+          "#c0c7b6",
+          "#eaf2e0"
+        ]
+      },
+      "parchment-text": {
+        "role": "neutral",
+        "displayName": "Parchment Text",
+        "canonical": "#f2f3eb",
+        "tonalRamp": [
+          "#0b0c07",
+          "#24251f",
+          "#40403a",
+          "#5d5e58",
+          "#7d7e77",
+          "#9e9f98",
+          "#c4c5bd",
+          "#eeefe7"
+        ]
+      },
+      "sage-muted": {
+        "role": "neutral",
+        "displayName": "Sage Muted",
+        "canonical": "#b8bdb0",
+        "tonalRamp": [
+          "#090d05",
+          "#22261c",
+          "#3d4237",
+          "#5b6054",
+          "#7b7f73",
+          "#9ca194",
+          "#c1c6b9",
+          "#ecf1e3"
+        ]
+      },
+      "placeholder": {
+        "role": "neutral",
+        "displayName": "Placeholder",
+        "canonical": "#a4ab9a",
+        "tonalRamp": [
+          "#090d03",
+          "#212619",
+          "#3c4234",
+          "#5a6051",
+          "#7a8070",
+          "#9ba191",
+          "#c0c7b6",
+          "#eaf2e0"
+        ]
+      },
+      "success-sage": {
+        "role": "semantic",
+        "displayName": "Success Sage",
+        "canonical": "#b4dca0",
+        "tonalRamp": [
+          "#001100",
+          "#0d2d00",
+          "#284a13",
+          "#466932",
+          "#658a52",
+          "#85ac72",
+          "#aad296",
+          "#d5fdc1"
+        ]
+      },
+      "danger-coral": {
+        "role": "semantic",
+        "displayName": "Danger Coral",
+        "canonical": "#ffb0a5",
+        "tonalRamp": [
+          "#230000",
+          "#460b08",
+          "#692822",
+          "#8b473f",
+          "#af665d",
+          "#d3877d",
+          "#fcada2",
+          "#ffd9ce"
+        ]
+      },
+      "grade-legendary": {
+        "role": "grade",
+        "displayName": "Legendary grade",
+        "canonical": "#efc377",
+        "tonalRamp": [
+          "#1b0400",
+          "#3a1c00",
+          "#5b3700",
+          "#7d5500",
+          "#9e7525",
+          "#c1974b",
+          "#e7bd74",
+          "#ffe9ab"
+        ]
+      },
+      "grade-immortal": {
+        "role": "grade",
+        "displayName": "Immortal grade",
+        "canonical": "#d8b8ef",
+        "tonalRamp": [
+          "#150022",
+          "#311541",
+          "#4e3260",
+          "#6d5080",
+          "#8d6fa2",
+          "#af90c5",
+          "#d5b5ec",
+          "#ffdfff"
+        ]
+      },
+      "grade-arcana": {
+        "role": "grade",
+        "displayName": "Arcana grade",
+        "canonical": "#efb7c9",
+        "tonalRamp": [
+          "#1f000b",
+          "#3d1324",
+          "#5c2f40",
+          "#7d4d5e",
+          "#9f6c7d",
+          "#c28d9e",
+          "#eab2c4",
+          "#ffdcef"
+        ]
+      },
+      "grade-beyond": {
+        "role": "grade",
+        "displayName": "Beyond grade",
+        "canonical": "#bdc9fb",
+        "tonalRamp": [
+          "#050528",
+          "#1a2046",
+          "#343c65",
+          "#515a86",
+          "#707aa8",
+          "#909ccb",
+          "#b6c1f3",
+          "#dfecff"
+        ]
+      },
+      "grade-celestial": {
+        "role": "grade",
+        "displayName": "Celestial grade",
+        "canonical": "#abd6e8",
+        "tonalRamp": [
+          "#000e1b",
+          "#002937",
+          "#1d4554",
+          "#3c6474",
+          "#5c8495",
+          "#7ca6b7",
+          "#a1ccde",
+          "#cbf7ff"
+        ]
+      },
+      "grade-divine": {
+        "role": "grade",
+        "displayName": "Divine grade",
+        "canonical": "#f0d797",
+        "tonalRamp": [
+          "#180700",
+          "#352000",
+          "#523c00",
+          "#715b19",
+          "#927b3c",
+          "#b49c5e",
+          "#dac283",
+          "#ffecac"
+        ]
+      },
+      "grade-uncommon": {
+        "role": "grade",
+        "displayName": "Uncommon grade",
+        "canonical": "#b4dca0",
+        "tonalRamp": [
+          "#001100",
+          "#0d2d00",
+          "#284a13",
+          "#466932",
+          "#658a52",
+          "#85ac72",
+          "#aad296",
+          "#d5fdc1"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Empty-state welcome line only."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Selected item name and dialog title."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Pane headings and app title."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Default text and controls."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Form labels, review values, slot errors."
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "Counts, slot details, grade metadata."
+      },
+      "value": {
+        "displayName": "Value",
+        "purpose": "Enchant values in tabular figures."
+      }
+    },
+    "shadows": [
+      {
+        "name": "dialog-lift",
+        "value": "0 20px 80px #0008",
+        "purpose": "Review and confirmation dialog over a #060805c9 backdrop."
+      },
+      {
+        "name": "pinned-save-bar",
+        "value": "0 -8px 24px #0006",
+        "purpose": "Bottom save bar on stacked layouts."
+      }
+    ],
+    "motion": [
+      {
+        "name": "state-change",
+        "value": "120ms ease",
+        "purpose": "Background and border color on hover and selection; removed under prefers-reduced-motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "compact",
+        "value": "400px"
+      },
+      {
+        "name": "tablet",
+        "value": "650px"
+      },
+      {
+        "name": "bench",
+        "value": "1100px"
+      },
+      {
+        "name": "wide",
+        "value": "1600px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one next action in view: Review & save, Apply enchant, Save with backup.",
+      "html": "<button class=\"ds-btn-primary\">Review &amp; save (2)</button> <button class=\"ds-btn-primary\" disabled>Review &amp; save</button>",
+      "css": ".ds-btn-primary { font: .9375rem/1.5 'Segoe UI', sans-serif; min-height: 44px; padding: .65rem 1rem; border-radius: 5px; cursor: pointer; transition: background-color 120ms, border-color 120ms; font-weight: 700; background: #f0ba58; border: 1px solid #f0ba58; color: #171a13; } .ds-btn-primary:hover:not(:disabled) { background: #ffd28a; border-color: #ffd28a; } .ds-btn-primary:focus-visible { outline: 3px solid #f0ba58; outline-offset: 4px; } .ds-btn-primary:disabled { background: transparent; border-color: #3b4035; color: #b8bdb0; font-weight: 600; cursor: not-allowed; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Load save, Edit, Add, Keep editing.",
+      "html": "<button class=\"ds-btn-secondary\">Load save</button>",
+      "css": ".ds-btn-secondary { font: .9375rem/1.5 'Segoe UI', sans-serif; min-height: 44px; padding: .65rem 1rem; border-radius: 5px; cursor: pointer; transition: background-color 120ms, border-color 120ms; background: transparent; border: 1px solid #777e6e; color: #f2f3eb; } .ds-btn-secondary:hover { background: #252920; } .ds-btn-secondary:active { background: #353b2d; } .ds-btn-secondary:focus-visible { outline: 3px solid #f0ba58; outline-offset: 4px; }"
+    },
+    {
+      "name": "Quiet Button",
+      "kind": "button",
+      "refersTo": "button-quiet",
+      "description": "Clear, Cancel, Close: low-emphasis actions.",
+      "html": "<button class=\"ds-btn-quiet\">Clear</button>",
+      "css": ".ds-btn-quiet { font: .9375rem/1.5 'Segoe UI', sans-serif; min-height: 44px; padding: .65rem 1rem; border-radius: 5px; cursor: pointer; transition: background-color 120ms, border-color 120ms; background: transparent; border: 1px solid transparent; color: #b8bdb0; } .ds-btn-quiet:hover { background: #252920; color: #f2f3eb; } .ds-btn-quiet:focus-visible { outline: 3px solid #f0ba58; outline-offset: 4px; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Save path, equipment search, value entry.",
+      "html": "<label class=\"ds-label\" for=\"ds-find\">Find equipment</label><input id=\"ds-find\" class=\"ds-input\" placeholder=\"Name or rarity\">",
+      "css": ".ds-label { display: block; color: #b8bdb0; font: .8125rem/1.5 'Segoe UI', sans-serif; margin-bottom: .4rem; } .ds-input { width: 100%; min-height: 44px; padding: .65rem .8rem; border: 1px solid #777e6e; border-radius: 5px; background: #151714; color: #f2f3eb; font: 1rem 'Segoe UI', sans-serif; caret-color: #f0ba58; } .ds-input::placeholder { color: #a4ab9a; } .ds-input:focus-visible { outline: 3px solid #f0ba58; outline-offset: 4px; }"
+    },
+    {
+      "name": "Selection Tile",
+      "kind": "card",
+      "refersTo": "selection-tile",
+      "description": "Hero and equipment choices; amber wash and border when selected.",
+      "html": "<button class=\"ds-tile\" aria-pressed=\"true\"><strong>Knight</strong><small>Level 36</small></button> <button class=\"ds-tile\" aria-pressed=\"false\"><strong>Ranger</strong><small>Level 17</small></button>",
+      "css": ".ds-tile { min-height: 62px; min-width: 150px; text-align: left; padding: .65rem .75rem; border: 1px solid #3b4035; border-radius: 5px; background: #1d201b; color: #f2f3eb; font: .9375rem/1.5 'Segoe UI', sans-serif; cursor: pointer; transition: border-color 120ms, background-color 120ms; } .ds-tile strong { display: block; font-weight: 600; } .ds-tile small { display: block; color: #b8bdb0; } .ds-tile:hover { border-color: #777e6e; } .ds-tile[aria-pressed=true] { background: #2e2a1e; border-color: #f0ba58; } .ds-tile[aria-pressed=true] strong { color: #f0ba58; } .ds-tile:focus-visible { outline: 3px solid #f0ba58; outline-offset: 4px; }"
+    },
+    {
+      "name": "Enchant Slot",
+      "kind": "custom",
+      "refersTo": "slot-editor",
+      "description": "Signature working row: marker or material icon, stat and detail, tabular value, actions on the right.",
+      "html": "<div class=\"ds-slot\"><span class=\"ds-slot-mark\">1</span><div class=\"ds-slot-copy\"><strong>Cooldown Reduction</strong><span>Void Opal · Tier 8</span></div><span class=\"ds-slot-value\">12.5%</span><button class=\"ds-slot-btn\">Edit</button></div>",
+      "css": ".ds-slot { display: flex; align-items: center; gap: .75rem; padding: .9rem 0; border-top: 1px solid #3b4035; border-bottom: 1px solid #3b4035; color: #f2f3eb; font: .9375rem/1.5 'Segoe UI', sans-serif; } .ds-slot-mark { display: grid; place-items: center; width: 36px; height: 36px; border: 1px dashed #777e6e; border-radius: 4px; color: #b8bdb0; font-size: .75rem; } .ds-slot-copy { flex: 1; } .ds-slot-copy strong { display: block; font-size: .875rem; } .ds-slot-copy span { color: #b8bdb0; font-size: .75rem; } .ds-slot-value { font: 600 1.2rem/1.2 Bahnschrift, 'Segoe UI', sans-serif; font-variant-numeric: tabular-nums; color: #f0ba58; } .ds-slot-btn { min-height: 44px; padding: .5rem .8rem; border: 1px solid #777e6e; border-radius: 5px; background: transparent; color: #f2f3eb; font-size: .8125rem; cursor: pointer; } .ds-slot-btn:hover { background: #252920; } .ds-slot-btn:focus-visible { outline: 3px solid #f0ba58; outline-offset: 4px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Enchanter's Bench",
+    "overview": "A craftsperson's bench at night. The surfaces are warm charcoal, quiet and matte, and a single amber lamp falls on whatever the player is working on: the selected hero, the selected item, the next action. The game's own item art supplies the color; the interface around it stays low and steady so a long session of comparing rolls never tires the eye.\n\nThe layout reads left to right as the job itself: heroes, then equipment, then the enchant slots of one item. Density is compact but never cramped; every control keeps a 44px hit target. Motion is almost absent: one short color transition confirms a selection or press, and reduced-motion preferences remove it.\n\nThe bench is honest. Validation problems, custom values, and the save path are shown plainly in the working surface rather than hidden behind reassurance, and nothing is written to disk without a review step.",
+    "keyCharacteristics": [
+      "Warm charcoal tonal layers with 1px hairlines; no decorative depth.",
+      "One amber accent marks selection and the next meaningful action.",
+      "Original game icons are the only illustration.",
+      "Rarity colors encode the game's actual grades, never decoration.",
+      "Windows-native type (Bahnschrift headings, Segoe UI body) with no network font requests."
+    ],
+    "rules": [
+      {
+        "name": "The One Lamp Rule",
+        "body": "Amber is the only accent. If two amber things compete on screen, one of them is not the current selection or the next action and should lose its amber.",
+        "section": "colors"
+      },
+      {
+        "name": "The Grade Truth Rule",
+        "body": "A grade tint appears only on a grade label and only for the grade the game assigns. Never reuse a grade tint for status, emphasis, or decoration.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tabular Numbers Rule",
+        "body": "Any number a player compares (enchant values, counts) uses tabular figures.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat Bench Rule",
+        "body": "Tiles, panes, slots, and the editor never cast shadows. If something needs to feel separate, give it a surface step or a hairline.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** reserve Lamp Amber for the current selection, staged values, focus, and the one primary action in view.",
+      "**Do** keep every control at least 44px tall with a visible 3px amber focus ring.",
+      "**Do** use the game's extracted icons for items and materials, sized 36px in slots, 48px in tiles, and 88px for the selected item.",
+      "**Do** show table version and save version separately, and keep the full save path visible in the footer and review dialog.",
+      "**Do** use the native dialog for confirmations and keep custom values behind the Advanced editing disclosure with a confirmation."
+    ],
+    "donts": [
+      "**Don't** use browser `confirm()` or `alert()`; confirmations go through the review dialog.",
+      "**Don't** add shadows to tiles, panes, slots, or the editor.",
+      "**Don't** load fonts, scripts, or images from the network; everything ships with the app.",
+      "**Don't** label local table validation as in-game or server verification, or describe an edit as safe.",
+      "**Don't** use grade tints, success, or danger colors as decoration."
+    ]
+  }
+}
